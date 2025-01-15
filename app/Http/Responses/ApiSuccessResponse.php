@@ -15,7 +15,9 @@ class ApiSuccessResponse implements Responsable
         private array $metadata,
         private int $code = Response::HTTP_OK,
         private array $headers = []
-    ) {}
+    ) {
+        //
+    }
 
     /**
      * @return \Symfony\Component\HttpFoundation\Response|void
