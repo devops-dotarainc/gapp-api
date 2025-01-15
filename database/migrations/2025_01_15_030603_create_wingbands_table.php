@@ -25,7 +25,8 @@ return new class extends Migration
             $table->string('nose_markings')->nullable();
             $table->string('feet_markings')->nullable();
             $table->string('season')->nullable();
-            $table->unsignedTinyInteger('status');
+            $table->unsignedTinyInteger('status')->default(1);
+            $table->date('wingband_date');
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();

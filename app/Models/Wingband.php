@@ -24,6 +24,7 @@ class Wingband extends Model
         'feet_markings',
         'season',
         'status',
+        'wingband_date',
         'created_by',
         'updated_by',
         'deleted_by',
