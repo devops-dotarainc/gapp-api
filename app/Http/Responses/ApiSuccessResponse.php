@@ -18,7 +18,9 @@ class ApiSuccessResponse implements Responsable
         private array $metadata,
         private int $code = Response::HTTP_OK,
         private array $headers = []
-    ) {}
+    ) {
+        //
+    }
 
     /**
      * @param  $request

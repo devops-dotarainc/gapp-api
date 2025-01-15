@@ -14,7 +14,8 @@ class ApiErrorResponse implements Responsable
         private ?Throwable $exception = null,
         // private int $code = Response::HTTP_INTERNAL_SERVER_ERROR,
         private array $headers = []
-    ) {}
+    ) {
+    }
 
     /**
      * @param  $request
@@ -24,12 +25,12 @@ class ApiErrorResponse implements Responsable
     {
         $response = ['message' => $this->message];
 
-        if (! is_null($this->exception) && config('app.debug')) {
+        if (!is_null($this->exception) && config('app.debug')) {
             $response['debug'] = [
                 'message' => $this->exception->getMessage(),
-                'file'    => $this->exception->getFile(),
-                'line'    => $this->exception->getLine(),
-                'trace'   => $this->exception->getTraceAsString()
+                'file' => $this->exception->getFile(),
+                'line' => $this->exception->getLine(),
+                'trace' => $this->exception->getTraceAsString()
             ];
         }
 
