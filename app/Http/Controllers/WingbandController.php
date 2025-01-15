@@ -6,9 +6,9 @@ use App\Http\Requests\Wingband\ImportWingbandRequest;
 use App\Http\Responses\ApiErrorResponse;
 use App\Http\Responses\ApiSuccessResponse;
 use App\Imports\WingbandImport;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\Response;
 
 class WingbandController extends Controller
 {
@@ -64,7 +64,7 @@ class WingbandController extends Controller
             }
 
             return new ApiErrorResponse(
-                'An error occured',
+                'An error occured while importing wingband data.',
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
