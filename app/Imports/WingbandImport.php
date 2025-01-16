@@ -10,6 +10,7 @@ use App\Models\Stag;
 use App\Models\Wingband;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -61,9 +62,9 @@ class WingbandImport implements ToCollection, WithHeadingRow
             if (! $checkWingband) {
                 Wingband::create([
                     'stag_registry' => $row['stag_registry_no'],
-                    'breeder_name' => $row['name_of_breeders'],
-                    'farm_name' => $row['farm_name'],
-                    'farm_address' => $row['farm_address'],
+                    'breeder_name' => ucwords($row['name_of_breeders']),
+                    'farm_name' => ucwords($row['farm_name']),
+                    'farm_address' => ucwords($row['farm_address']),
                     'province' => $row['province'],
                     'wingband_number' => $row['wingband_no'],
                     'feather_color' => $row['feather_color'],
@@ -73,7 +74,7 @@ class WingbandImport implements ToCollection, WithHeadingRow
                     'feet_markings' => $row['feet_markings'],
                     'season' => $seasons->value,
                     'wingband_date' => $convertedDate,
-                    'created_by' => 1, // for testing only
+                    'created_by' => auth()->user()->id,
                 ]);
             } else {
                 $wingbandDate = Carbon::parse($checkWingband->wingband_date);
@@ -94,8 +95,8 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $stag->banded_cockerels = 1;
                 $stag->save();
             } else {
-                $stag->banded_cockerels += 1;
-                $stag->save();
+                $checkStag->banded_cockerels += 1;
+                $checkStag->save();
             }
 
             $checkBreeder = Breeder::where('name', ucwords($row['name_of_breeders']))->first();
@@ -109,8 +110,8 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $breeder->banded_cockerels = 1;
                 $breeder->save();
             } else {
-                $breeder->banded_cockerels += 1;
-                $breeder->save();
+                $checkBreeder->banded_cockerels += 1;
+                $checkBreeder->save();
             }
 
             $checkFarm = Farm::where('name', ucwords($row['farm_name']))->first();
@@ -123,8 +124,8 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $farm->banded_cockerels = 1;
                 $farm->save();
             } else {
-                $farm->banded_cockerels += 1;
-                $farm->save();
+                $checkFarm->banded_cockerels += 1;
+                $checkFarm->save();
             }
 
             $checkChapter = Chapter::where('chapter', ucfirst($row['chapter']))->first();
@@ -135,9 +136,11 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $chapter->banded_cockerels = 1;
                 $chapter->save();
             } else {
-                $chapter->banded_cockerels += 1;
-                $chapter->save();
+                $checkChapter->banded_cockerels += 1;
+                $checkChapter->save();
             }
+
+            DB::commit();
         }
 
         if (count($arrayData) > 0) {

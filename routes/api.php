@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('wingband')->middleware('auth:sanctum')->group(function () {
     Route::post('/import-wingband', [WingbandController::class, 'importWingband']);
-
+    Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
     Route::post('/update/{id}', [WingbandController::class, 'update']);
     Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
 });

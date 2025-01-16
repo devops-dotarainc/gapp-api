@@ -4,7 +4,7 @@ namespace App\Http\Requests\Wingband;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ImportWingbandRequest extends FormRequest
+class StoreWingbandRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,7 @@ class ImportWingbandRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'excel_file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2048'],
+            'wingband_data' => ['required', 'array'],
         ];
     }
 }
