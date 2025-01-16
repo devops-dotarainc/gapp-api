@@ -25,12 +25,15 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::any('logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'profile']);
-        Route::put('change-password', [AuthController::class, 'changePassword']);
     });
 });
 
-Route::prefix('user')->group(function () {
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('store', [UserController::class, 'store']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('users', [UserController::class, 'index']);
+    Route::prefix('user')->group(function () {
+        Route::post('/', [UserController::class, 'store']);
+        Route::get('/{id}', [UserController::class, 'show']);
+        Route::post('/update/{id}', [UserController::class, 'update']);
+        Route::delete('/{id}', [UserController::class, 'delete']);
     });
 });
