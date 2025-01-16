@@ -14,12 +14,6 @@ class AuthController extends Controller
 {
     public function login(LoginRequest $request)
     {
-        $roles = [
-            1 => 'admin',
-            2 => 'viewer',
-            3 => 'encoder',
-        ];
-
         $user = new User;
 
         $user = $user->where('username', $request['username'])
@@ -57,8 +51,6 @@ class AuthController extends Controller
     public function profile()
     {
         $user = auth()->user();
-
-        // $user['role'] = $user->role->label();
 
         return new ApiSuccessResponse(
             [
