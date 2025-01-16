@@ -54,27 +54,6 @@ class AuthController extends Controller
         );
     }
 
-    public function profile()
-    {
-        $user = auth()->user();
-
-        // $user['role'] = $user->role->label();
-
-        return new ApiSuccessResponse(
-            [
-                'username' => $user->username,
-                'role' => $user->role->label(),
-                'created_at' => $user->created_at,
-                'created_by' => $user->created_by,
-            ],
-            [
-                'message' => 'Profile retrieved successfully!',
-            ],
-            Response::HTTP_OK,
-        );
-
-    }
-
     public function logout()
     {
         auth()->user()->tokens()->delete();
@@ -90,6 +69,4 @@ class AuthController extends Controller
         );
 
     }
-
-
 }
