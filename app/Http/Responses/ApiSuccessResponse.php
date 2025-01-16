@@ -11,7 +11,7 @@ class ApiSuccessResponse implements Responsable
      * @param  mixed  $data
      */
     public function __construct(
-        // private mixed $data,
+        private mixed $data,
         private array $metadata,
         private int $code = Response::HTTP_OK,
         private array $headers = []
@@ -26,8 +26,8 @@ class ApiSuccessResponse implements Responsable
     {
         return response()->json(
             [
-                // 'data' => $this->data,
-                'metadata' => $this->metadata,
+                'data' => $this->data,
+                'message' => $this->metadata['message'],
             ],
             $this->code,
             $this->headers
