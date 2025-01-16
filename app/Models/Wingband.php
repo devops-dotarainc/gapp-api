@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Season;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -32,4 +33,21 @@ class Wingband extends Model
         'updated_by',
         'deleted_by',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'season' => Season::class,
+        ];
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
 }

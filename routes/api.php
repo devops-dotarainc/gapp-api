@@ -11,11 +11,15 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
-Route::prefix('wingband')->middleware('auth:sanctum')->group(function () {
-    Route::post('/import-wingband', [WingbandController::class, 'importWingband']);
-    Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
-    Route::post('/update/{id}', [WingbandController::class, 'update']);
-    Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/wingbands', [WingbandController::class, 'index']);
+
+    Route::prefix('wingband')->group(function () {
+        Route::post('/import-wingband', [WingbandController::class, 'importWingband']);
+        Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
+        Route::post('/update/{id}', [WingbandController::class, 'update']);
+        Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
+    });    
 });
 
 Route::prefix('stag')->group(function () {
