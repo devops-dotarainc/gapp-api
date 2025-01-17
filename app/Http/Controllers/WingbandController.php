@@ -15,6 +15,7 @@ use App\Imports\WingbandImport;
 use App\Models\Breeder;
 use App\Models\Chapter;
 use App\Models\Farm;
+use App\Models\Season as ModelsSeason;
 use App\Models\Stag;
 use App\Models\Wingband;
 use Carbon\Carbon;
@@ -241,6 +242,19 @@ class WingbandController extends Controller
                 } else {
                     $checkChapter->banded_cockerels += 1;
                     $checkChapter->save();
+                }
+
+                $season = ModelsSeason::where('season', $seasons)->where('year', now()->year())->first();
+
+                if (! $season) {
+                    $season = new ModelsSeason;
+                    $season->season = $seasons;
+                    $season->entry += 1;
+                    $season->year = now()->year();
+                    $season->save();
+                } else {
+                    $season->entry += 1;
+                    $season->save();
                 }
 
                 DB::commit();

@@ -1,15 +1,15 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\StagController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\WingbandController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\{
+    AuthController,
+    StagController,
+    UserController,
+    WingbandController,
+    SeasonController,
+    SummaryController
+};
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wingbands', [WingbandController::class, 'index']);
@@ -19,7 +19,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
         Route::post('/update/{id}', [WingbandController::class, 'update']);
         Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
-    });    
+    });
+    
+    /* seasons */
+    Route::prefix('season')->group(function () {
+        Route::get('count', [SeasonController::class, 'countRegistry']);
+    }); 
+
+    /* summaries */
+    Route::prefix('summary')->group(function () {
+        Route::get('breeders', [SummaryController::class, 'getBreeders']);
+        Route::get('chapters', [SummaryController::class, 'getChapters']);
+        Route::get('farms', [SummaryController::class, 'getFarms']);
+        Route::get('stags', [SummaryController::class, 'getStags']);
+    });
+
 });
 
 Route::prefix('stag')->group(function () {
