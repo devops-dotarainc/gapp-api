@@ -2,25 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Summary\ChapterRequest;
-use App\Http\Responses\ApiSuccessResponse;
 use App\Models\Season;
+use App\Http\Responses\ApiSuccessResponse;
+use App\Http\Requests\Season\SeasonRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 class SeasonController extends Controller
 {      
-    public function countRegistry(ChapterRequest $request)
+    public function countRegistry(SeasonRequest $request)
     {
         $validated = $request->validated();
 
-        $season = Season::where('season', $validated['season']);
-
-        if(isset($validated['year'])) {
-            $season->where('season', $request->season);
-        }
+        $season = Season::where('year', $validated['year']);
 
         $data = [
-            'count' => $season->count()
+            'data' => $season->get(),
+            'total_entry' => $season->sum('entry')
         ];
 
         return new ApiSuccessResponse(

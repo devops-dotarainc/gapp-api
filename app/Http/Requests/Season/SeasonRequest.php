@@ -22,8 +22,8 @@ class SeasonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => 'nullable|digits:4',
-            'season' => 'required|integer|in:1,2,3,4'
+            'year' => 'required|digits:4',
+            // 'season' => '|integer|in:1,2,3,4'
         ];
     }
 }
