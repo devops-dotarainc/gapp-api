@@ -22,11 +22,22 @@ class UserController extends Controller
         try {
             $users = new User;
 
+            $sort = $request['sort'] ?? 'id';
+
+            $order = $request['order'] ?? 'desc';
+
+            $limit = $request['limit'] ?? 50;
+
             if (isset($request['username'])) {
                 $users = $users->where('username', $request['username']);
             }
 
-            $users = $users->get();
+            $users = $users->orderBy($sort, $order)
+                ->paginate($limit);
+
+            $users->getCollection()->transform(function ($user) {
+                return $user;
+            });
 
             return new ApiSuccessResponse(
                 $users,

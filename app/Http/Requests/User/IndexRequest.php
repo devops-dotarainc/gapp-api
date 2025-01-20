@@ -27,6 +27,10 @@ class IndexRequest extends FormRequest
     {
         return [
             'username' => ['string'],
+            'page' => ['integer', 'min:1'],
+            'limit' => ['integer', 'min:1', 'max:100'],
+            'sort' => ['string'],
+            'order' => ['string', 'in:asc,desc'],
         ];
     }
 }
