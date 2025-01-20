@@ -136,7 +136,7 @@ class WingbandController extends Controller
 
                 $seasonRanges = [
                     ['start' => '01-02', 'end' => '01-30', 'season' => Season::EARLY_BIRD],
-                    ['start' => '03-01', 'end' => '01-30', 'season' => Season::LOCAL],
+                    ['start' => '03-01', 'end' => '03-30', 'season' => Season::LOCAL],
                     ['start' => '04-01', 'end' => '04-30', 'season' => Season::NATIONAL],
                     ['start' => '06-01', 'end' => '06-30', 'season' => Season::LATE_BORN],
                 ];
