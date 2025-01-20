@@ -32,6 +32,7 @@ class UpdateRequest extends FormRequest
             'first_name' => ['string', 'max:255'],
             'last_name' => ['string', 'max:255'],
             'email' => ['email'],
+            'contact_number' => ['string', 'min:11', 'max:11'],
         ];
     }
 }

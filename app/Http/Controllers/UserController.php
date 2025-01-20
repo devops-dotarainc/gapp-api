@@ -136,6 +136,10 @@ class UserController extends Controller
                 $user->email = $request['email'];
             }
 
+            if (isset($request['contact_number'])) {
+                $user->contact_number = $request['contact_number'];
+            }
+
             if (isset($request['role'])) {
                 $user->role = $request['role'];
             }
