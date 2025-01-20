@@ -59,6 +59,7 @@ class AuthController extends Controller
                 'contact_number' => $user->contact_number,
                 'created_at' => $user->created_at,
                 'created_by' => $user->created_by,
+                'total_wingband' => 123, //need ma-add to
             ],
             [
                 'message' => 'Profile retrieved successfully!',
