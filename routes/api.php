@@ -45,6 +45,7 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::any('change-password', [AuthController::class, 'changePassword']);
+        Route::post('delete', [AuthController::class, 'delete']);
         Route::any('logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'profile']);
     });

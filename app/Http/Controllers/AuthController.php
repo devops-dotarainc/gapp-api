@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Responses\ApiErrorResponse;
 use App\Http\Responses\ApiSuccessResponse;
+use App\Models\Wingband;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -53,6 +54,8 @@ class AuthController extends Controller
     {
         $user = auth()->user();
 
+        $totalWingband = Wingband::where('created_by', $user->id)->count();
+
         return new ApiSuccessResponse(
             [
                 'username' => $user->username,
@@ -60,7 +63,7 @@ class AuthController extends Controller
                 'contact_number' => $user->contact_number,
                 'created_at' => $user->created_at,
                 'created_by' => $user->created_by,
-                'total_wingband' => 123, //need ma-add to
+                'total_wingband' => $totalWingband,
             ],
             [
                 'message' => 'Profile retrieved successfully!',
@@ -96,6 +99,36 @@ class AuthController extends Controller
             ],
             [
                 'message' => 'Password changed successfully!',
+            ],
+            Response::HTTP_OK,
+        );
+    }
+
+    public function delete($id) {
+        $user = User::find($id);
+
+        if(!$user){
+            return new ApiErrorResponse(
+                'User does not exist!',
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        if(auth()->user()->id === $user->id) {
+            return new ApiErrorResponse(
+                'Cannot delete your own account!',
+                Response::HTTP_BAD_REQUEST,
+            );
+        }
+
+        $user->tokens()->delete();
+
+        $user->delete();
+
+        return new ApiSuccessResponse(
+            null,
+            [
+                'message' => 'User deleted successfully!',
             ],
             Response::HTTP_OK,
         );
