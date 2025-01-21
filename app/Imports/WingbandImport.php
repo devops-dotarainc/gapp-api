@@ -81,6 +81,7 @@ class WingbandImport implements ToCollection, WithHeadingRow
             }
 
             $checkWingband = Wingband::where('wingband_number', $row['wingband_no'])
+                ->where('season', $seasons)
                 ->orderBy('created_at', 'desc')
                 ->first();
 
@@ -103,7 +104,7 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 ]);
             } else {
                 $wingbandDate = Carbon::parse($checkWingband->wingband_date);
-                if ($wingbandDate->year == Carbon::now()->year) {
+                if ($wingbandDate->year == $convertedDate->year) {
                     $duplicateWingband[] = $row['row_no'];
                 }
             }

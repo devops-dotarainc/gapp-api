@@ -167,12 +167,13 @@ class WingbandController extends Controller
                 }
 
                 $checkWingband = Wingband::where('wingband_number', $request['wingband_number'])
+                    ->where('season', $seasons)
                     ->orderBy('created_at', 'desc')
                     ->first();
 
                 if (! is_null($checkWingband)) {
                     $wingbandDate = Carbon::parse($checkWingband->wingband_date);
-                    if ($wingbandDate->year == Carbon::now()->year) {
+                    if ($wingbandDate->year == $date->year) {
                         return new ApiErrorResponse(
                             'Duplicate wingband number '.$checkWingband->wingband_number,
                             Response::HTTP_BAD_REQUEST
