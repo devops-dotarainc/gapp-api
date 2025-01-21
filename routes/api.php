@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('chapters', [SummaryController::class, 'getChapters']);
         Route::get('farms', [SummaryController::class, 'getFarms']);
         Route::get('stags', [SummaryController::class, 'getStags']);
+        Route::get('statistics', [SummaryController::class, 'getStatistics']);
     });
 
 });

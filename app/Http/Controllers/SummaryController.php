@@ -178,4 +178,24 @@ class SummaryController extends Controller
             Response::HTTP_OK
         );
     }
+
+    public function getStatistics(){
+        $user = auth()->user();
+
+        $chapterCount = Chapter::count();
+        $farmCount = Farm::count();
+        $stagCount = Stag::count();
+        $breederCount = Breeder::count();
+
+        return new ApiSuccessResponse(
+            [
+                "Chapter" => $chapterCount,
+                "Farm" => $farmCount,
+                "Stag" => $stagCount,
+                "Breeder" => $breederCount,
+            ],
+            ['message' => 'Summary statistics retrieved successfully!'],
+            Response::HTTP_OK
+        );
+    }
 }
