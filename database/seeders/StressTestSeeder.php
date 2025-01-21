@@ -22,8 +22,7 @@ class StressTestSeeder extends Seeder
     {
         $wingbands = Wingband::all()->count();
 
-        $userLimit = (int) env('SEEDER_USER_LIMIT', 1) + $wingbands;
-        $wingbandLimit = (int) env('SEEDER_WINGBAND_LIMIT', 1) + $wingbands;        
+        $wingbandLimit = (int) env('SEEDER_LIMIT', 1) + $wingbands;        
 
         $start = 1 + $wingbands;
 
@@ -33,14 +32,6 @@ class StressTestSeeder extends Seeder
         $addresses = ['Address 1', 'Address 2', 'Address 3', 'Address 4', 'Address 5'];
         $provinces = ['Province 1', 'Province 2', 'Province 3', 'Province 4', 'Province 5'];
         $colors = ['G', 'B', 'White', 'Red'];
-
-        for($i = $start; $i < $userLimit; $i++) {
-            User::create([
-                'username' => 'user-' . $i,
-                'password' => '$2y$12$KosTXAWuHMCZqEItz0YE8OQYtMQIROP73TySQhdjm8Oocd9cpkWmG',
-                'role' => rand(1, 3)
-            ]);
-        }
 
         for($i = $start; $i < $wingbandLimit; $i++) {
             $breederName = $breeders[array_rand($breeders)];
