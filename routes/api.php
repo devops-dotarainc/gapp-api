@@ -56,6 +56,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [UserController::class, 'store']);
         Route::get('/{id}', [UserController::class, 'show']);
         Route::post('/update/{id}', [UserController::class, 'update']);
-        Route::delete('/delete/{id}', [UserController::class, 'delete']);
+        Route::any('/delete/{id}', [UserController::class, 'delete']);
     });
 });
