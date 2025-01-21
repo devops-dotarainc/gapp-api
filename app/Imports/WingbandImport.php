@@ -11,7 +11,7 @@ use App\Models\Stag;
 use App\Models\Wingband;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -21,6 +21,23 @@ class WingbandImport implements ToCollection, WithHeadingRow
     {
         $arrayData = [];
         $duplicateWingband = [];
+
+        $rows = $rows->filter(function ($row) {
+            $fieldsToCheck = [
+                'date', 'stag_registry_no', 'name_of_breeders', 'farm_name',
+                'farm_address', 'chapter', 'province', 'contact_no',
+                'wingband_no', 'feather_color', 'leg_color',
+                'comb_shape', 'nose_markings', 'feet_markings',
+            ];
+
+            foreach ($fieldsToCheck as $field) {
+                if (! empty($row[$field])) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
 
         foreach ($rows as $row) {
 
@@ -36,6 +53,12 @@ class WingbandImport implements ToCollection, WithHeadingRow
             }
 
             $convertedDate = Carbon::create(1899, 12, 30)->addDays($row['date']);
+
+            if ($convertedDate->equalTo(Carbon::create(1899, 12, 30))) {
+                Log::info('Skipping invalid date conversion for row: '.$row['row_no']);
+
+                continue;
+            }
 
             $seasonRanges = [
                 ['start' => '01-02', 'end' => '01-30', 'season' => Season::EARLY_BIRD],
@@ -53,7 +76,8 @@ class WingbandImport implements ToCollection, WithHeadingRow
             }
 
             if (! $seasons) {
-                dd('error_message_here');
+                Log::info('failed: '.$convertedDate);
+                throw new \Exception(json_encode($arrayData));
             }
 
             $checkWingband = Wingband::where('wingband_number', $row['wingband_no'])
@@ -153,8 +177,6 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $season->entry += 1;
                 $season->save();
             }
-
-            DB::commit();
         }
 
         if (count($arrayData) > 0) {

@@ -313,6 +313,8 @@ class WingbandController extends Controller
 
             Excel::import(new WingbandImport, $file);
 
+            DB::commit();
+
             return new ApiSuccessResponse(
                 null,
                 ['message' => 'Wingbands imported successfully please check the excel data uploaded to the system'],
