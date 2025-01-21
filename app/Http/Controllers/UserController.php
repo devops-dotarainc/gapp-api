@@ -146,7 +146,17 @@ class UserController extends Controller
 
             if (isset($request['password'])) {
                 //password confirmation
-                $user->password = $request['password'];
+
+                if ($user->password === $request['password']) {
+                    return new ApiErrorResponse(
+                        'Cannot use current password as new password!',
+                        Response::HTTP_BAD_REQUEST,
+                    );
+                }
+
+                $user->password = Hash::make($request['password']);
+
+                $user->tokens()->delete();
             }
 
             $user->save();

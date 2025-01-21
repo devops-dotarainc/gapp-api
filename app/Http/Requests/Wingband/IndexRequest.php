@@ -31,6 +31,7 @@ class IndexRequest extends FormRequest
             'breeder_name' => ['string', 'max:255'],
             'wingband_number' => ['string', 'max:255'],
             'updated_by' => ['string', 'max:255'],
+            'updated_by' => ['string', 'in:1,2'],
             'wingband_year' => ['digits:4', 'integer', 'min:1900', 'max:'.date('Y')+1],
         ];
     }
