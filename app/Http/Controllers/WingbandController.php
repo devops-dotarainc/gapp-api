@@ -82,6 +82,10 @@ class WingbandController extends Controller
             $wingbands->whereYear('wingband_date', $request->wingband_year);
         }
 
+        if (isset($request->status)) {
+            $wingbands->where('status', $request->status);
+        }
+
         if (isset($request->search)) {
             $search = $request->search;
 
