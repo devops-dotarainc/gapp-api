@@ -1,30 +1,30 @@
 <?php
 
-use App\Http\Controllers\{
-    AuthController,
-    StagController,
-    UserController,
-    WingbandController,
-    SeasonController,
-    SummaryController
-};
-
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SeasonController;
+use App\Http\Controllers\StagController;
+use App\Http\Controllers\SummaryController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\WingbandController;
+use App\Http\Middleware\CorsMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wingbands', [WingbandController::class, 'index']);
 
     Route::prefix('wingband')->group(function () {
-        Route::post('/import-wingband', [WingbandController::class, 'importWingband']);
+        Route::middleware([CorsMiddleware::class])->group(function () {
+            Route::post('/import-wingband', [WingbandController::class, 'importWingband']);
+        });
         Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
         Route::post('/update/{id}', [WingbandController::class, 'update']);
         Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
     });
-    
+
     /* seasons */
     Route::prefix('season')->group(function () {
         Route::get('count', [SeasonController::class, 'countRegistry']);
-    }); 
+    });
 
     /* summaries */
     Route::prefix('summary')->group(function () {
