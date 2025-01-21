@@ -34,6 +34,13 @@ class UserController extends Controller
                 $users = $users->where('username', $request['username']);
             }
 
+            if (isset($request['search'])) {
+                $search = $request['search'];
+    
+                $users = $users->where('username', 'LIKE', "%$search%")
+                    ->orWhere('contact_number', 'LIKE', "%$search%");
+            }
+
             $users = $users->orderBy($sort, $order)
                 ->paginate($limit);
 

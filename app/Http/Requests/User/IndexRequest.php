@@ -31,6 +31,7 @@ class IndexRequest extends FormRequest
             'limit' => ['integer', 'min:1', 'max:100'],
             'sort' => ['string'],
             'order' => ['string', 'in:asc,desc'],
+            'search' => ['string', 'max:255'],
         ];
     }
 }
