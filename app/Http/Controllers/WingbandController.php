@@ -36,53 +36,53 @@ class WingbandController extends Controller
         $order = $request->order ?? 'asc';
 
         $wingbands = Wingband::with('user:id,username')
-        ->select(
-            'id',
-            'stag_registry',
-            'breeder_name',
-            'farm_name',
-            'farm_address',
-            'province',
-            'wingband_number',
-            'feather_color',
-            'leg_color',
-            'comb_shape',
-            'nose_markings',
-            'feet_markings',
-            'wingband_date',
-            'season',
-            'created_by',
-        );
+            ->select(
+                'id',
+                'stag_registry',
+                'breeder_name',
+                'farm_name',
+                'farm_address',
+                'province',
+                'wingband_number',
+                'feather_color',
+                'leg_color',
+                'comb_shape',
+                'nose_markings',
+                'feet_markings',
+                'wingband_date',
+                'season',
+                'created_by',
+            );
 
-        if(auth()->user()->role == Role::ENCODER) {
+        if (auth()->user()->role == Role::ENCODER) {
             $wingbands->where('created_by', auth()->user()->id);
         }
 
-        if(isset($request->season)) {
+        if (isset($request->season)) {
             $wingbands->where('season', $request->season);
         }
 
-        if(isset($request->stag_registry)) {
+        if (isset($request->stag_registry)) {
             $wingbands->where('stag_registry', $request->stag_registry);
         }
 
-        if(isset($request->breeder_name)) {
+        if (isset($request->breeder_name)) {
             $wingbands->where('breeder_name', $request->breeder_name);
         }
 
-        if(isset($request->wingband_number)) {
+        if (isset($request->wingband_number)) {
             $wingbands->where('wingband_number', $request->wingband_number);
         }
 
-        if(isset($request->updated_by)) {
+        if (isset($request->updated_by)) {
             $wingbands->where('created_by', Cryptor::decrypt($request->updated_by));
         }
 
-        if(isset($request->wingband_year)) {
+        if (isset($request->wingband_year)) {
             $wingbands->whereYear('wingband_date', $request->wingband_year);
         }
 
-        if(isset($request->search)) {
+        if (isset($request->search)) {
             $search = $request->search;
 
             $wingbands->where('stag_registry', 'LIKE', "%$search%")
@@ -99,7 +99,7 @@ class WingbandController extends Controller
                 ->orWhere('wingband_date', 'LIKE', "%$search%");
         }
 
-        if($wingbands->doesntExist()) {
+        if ($wingbands->doesntExist()) {
             return new ApiErrorResponse(
                 'No wingbands found.',
                 Response::HTTP_NOT_FOUND
@@ -112,7 +112,7 @@ class WingbandController extends Controller
             $wingband->_id = Cryptor::encrypt($wingband->id);
             $wingband->created_by = $wingband->user->username;
             $wingband->season_name = $wingband->season->label();
-            
+
             unset($wingband->user, $wingband->id, $wingband->season);
 
             return $wingband;
@@ -289,6 +289,13 @@ class WingbandController extends Controller
         }
 
         $file = $request->file('excel_file');
+
+        if ($file->getClientOriginalExtension() !== 'xlsx') {
+            return new ApiErrorResponse(
+                'Invalid file format. Only .xlsx files are allowed.',
+                Response::HTTP_BAD_REQUEST
+            );
+        }
 
         try {
 
