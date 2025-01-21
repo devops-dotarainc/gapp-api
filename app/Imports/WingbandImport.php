@@ -6,6 +6,7 @@ use App\Enums\Season;
 use App\Models\Breeder;
 use App\Models\Chapter;
 use App\Models\Farm;
+use App\Models\Season as ModelsSeason;
 use App\Models\Stag;
 use App\Models\Wingband;
 use Carbon\Carbon;
@@ -38,7 +39,7 @@ class WingbandImport implements ToCollection, WithHeadingRow
 
             $seasonRanges = [
                 ['start' => '01-02', 'end' => '01-30', 'season' => Season::EARLY_BIRD],
-                ['start' => '03-01', 'end' => '01-30', 'season' => Season::LOCAL],
+                ['start' => '03-01', 'end' => '03-30', 'season' => Season::LOCAL],
                 ['start' => '04-01', 'end' => '04-30', 'season' => Season::NATIONAL],
                 ['start' => '06-01', 'end' => '06-30', 'season' => Season::LATE_BORN],
             ];
@@ -138,6 +139,19 @@ class WingbandImport implements ToCollection, WithHeadingRow
             } else {
                 $checkChapter->banded_cockerels += 1;
                 $checkChapter->save();
+            }
+
+            $season = ModelsSeason::where('season', $seasons)->where('year', now()->year)->first();
+
+            if (! $season) {
+                $season = new ModelsSeason;
+                $season->season = $seasons;
+                $season->entry += 1;
+                $season->year = now()->year;
+                $season->save();
+            } else {
+                $season->entry += 1;
+                $season->save();
             }
 
             DB::commit();

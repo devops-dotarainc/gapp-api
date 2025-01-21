@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Season\SeasonRequest;
 use App\Http\Responses\ApiSuccessResponse;
 use App\Models\Season;
+use App\Models\Wingband;
 use Symfony\Component\HttpFoundation\Response;
 
 class SeasonController extends Controller
@@ -13,11 +14,29 @@ class SeasonController extends Controller
     {
         $validated = $request->validated();
 
-        $season = Season::where('created_by', auth()->user()->id)->where('year', $validated['year']);
+        $seasons = Season::where('year', $validated['year'])->get();
+
+        $seasons->transform(function ($season) {
+            if ($season->id == 1) {
+                $earlybirdCount = Wingband::where('created_by', auth()->user()->id)->where('season', 1)->count();
+                $season->entry = $earlybirdCount;
+            } elseif ($season->id == 2) {
+                $localCount = Wingband::where('created_by', auth()->user()->id)->where('season', 2)->count();
+                $season->entry = $localCount;
+            } elseif ($season->id == 3) {
+                $nationalCount = Wingband::where('created_by', auth()->user()->id)->where('season', 3)->count();
+                $season->entry = $nationalCount;
+            } elseif ($season->id == 4) {
+                $latebornCount = Wingband::where('created_by', auth()->user()->id)->where('season', 4)->count();
+                $season->entry = $latebornCount;
+            }
+
+            return $season;
+        });
 
         $data = [
-            'data' => $season->get(),
-            'total_entry' => $season->sum('entry'),
+            'data' => $seasons,
+            'total_entry' => $seasons->sum('entry'),
         ];
 
         return new ApiSuccessResponse(
