@@ -86,6 +86,12 @@ class WingbandController extends Controller
             $wingbands->where('status', $request->status);
         }
 
+        if (isset($request->farm)) {
+            $farm = $request->farm;
+
+            $wingbands->where('farm_name', 'LIKE', "%$farm%");
+        }
+
         if (isset($request->search)) {
             $search = $request->search;
 
