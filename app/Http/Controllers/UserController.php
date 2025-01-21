@@ -172,12 +172,28 @@ class UserController extends Controller
         try {
             $user = User::find($id);
 
+            if(!$user){
+                return new ApiErrorResponse(
+                    'User does not exist!',
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                );
+            }
+
+            if(auth()->user()->id === $user->id) {
+                return new ApiErrorResponse(
+                    'Cannot delete your own account!',
+                    Response::HTTP_BAD_REQUEST,
+                );
+            }
+
+            $user->tokens()->delete();
+
             $user->delete();
 
             return new ApiSuccessResponse(
-                $user,
+                null,
                 [
-                    'message' => 'User deleted succesfully!',
+                    'message' => 'User deleted successfully!',
                 ],
                 Response::HTTP_OK,
             );

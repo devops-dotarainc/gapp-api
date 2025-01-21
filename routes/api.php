@@ -46,7 +46,6 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::any('change-password', [AuthController::class, 'changePassword']);
-        Route::post('delete', [AuthController::class, 'delete']);
         Route::any('logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'profile']);
     });
@@ -58,6 +57,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [UserController::class, 'store']);
         Route::get('/{id}', [UserController::class, 'show']);
         Route::post('/update/{id}', [UserController::class, 'update']);
-        Route::delete('/{id}', [UserController::class, 'delete']);
+        Route::delete('/delete/{id}', [UserController::class, 'delete']);
     });
 });
