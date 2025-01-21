@@ -13,9 +13,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wingbands', [WingbandController::class, 'index']);
 
     Route::prefix('wingband')->group(function () {
-        Route::middleware([CorsMiddleware::class])->group(function () {
-            Route::post('/import-wingband', [WingbandController::class, 'importWingband']);
-        });
+        Route::middleware([CorsMiddleware::class])
+            ->post('/import-wingband', [WingbandController::class, 'importWingband']);
         Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
         Route::post('/update/{id}', [WingbandController::class, 'update']);
         Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
