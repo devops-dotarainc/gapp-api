@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\User\DeleteRequest;
-use App\Http\Requests\User\UpdateRequest;
+use App\Enums\Role;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\User\ShowRequest;
 use App\Http\Requests\User\IndexRequest;
 use App\Http\Requests\User\StoreRequest;
 use App\Http\Responses\ApiErrorResponse;
+use App\Http\Requests\User\DeleteRequest;
+use App\Http\Requests\User\UpdateRequest;
 use App\Http\Responses\ApiSuccessResponse;
 
 class UserController extends Controller
@@ -120,6 +122,8 @@ class UserController extends Controller
                 );
             }
 
+            Gate::authorize('update', $user);
+
             if (isset($request['username'])) {
                 $user->username = $request['username'];
             }
@@ -159,6 +163,13 @@ class UserController extends Controller
                 $user->tokens()->delete();
             }
 
+            if($user->isClean()) {
+                return new ApiErrorResponse(
+                    'No changes made.',
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                );
+            }
+
             $user->save();
 
             return new ApiSuccessResponse(
@@ -188,6 +199,8 @@ class UserController extends Controller
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
+
+            Gate::authorize('delete', $user);
 
             if(auth()->user()->id === $user->id) {
                 return new ApiErrorResponse(
