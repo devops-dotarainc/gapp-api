@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -66,7 +67,38 @@ class AuthController extends Controller
             ],
             Response::HTTP_OK,
         );
+    }
 
+    public function changePassword(ChangePasswordRequest $request){
+        $user = auth()->user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return new ApiErrorResponse(
+                'Current password incorrect',
+                Response::HTTP_BAD_REQUEST,
+            );
+        }
+
+        if ($request->password === $request->new_password) {
+            return new ApiErrorResponse(
+                'You cannot use your current password as your new password!',
+                Response::HTTP_BAD_REQUEST,
+            );
+        }
+
+        $user->password = Hash::make($request->new_password);
+
+        $user->save();
+
+        return new ApiSuccessResponse(
+            [
+                'user' => $user->username
+            ],
+            [
+                'message' => 'Password changed successfully!',
+            ],
+            Response::HTTP_OK,
+        );
     }
 
     public function logout()
