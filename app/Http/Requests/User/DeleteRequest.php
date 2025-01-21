@@ -11,11 +11,7 @@ class DeleteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        if (auth()->user()->role->value === 1) {
-            return true;
-        }
-
-        return false;
+        return auth()->user()->role->value === 1;
     }
 
     /**
