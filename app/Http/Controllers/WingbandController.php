@@ -362,7 +362,7 @@ class WingbandController extends Controller
                 );
             }
 
-            $wingband = Wingband::find($id);
+            $wingband = Wingband::withTrashed()->find($id);
 
             if (! isset($wingband)) {
                 return new ApiErrorResponse(
