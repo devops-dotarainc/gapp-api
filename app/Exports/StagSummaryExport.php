@@ -27,7 +27,6 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
     public function headings(): array
     {
         return [
-            'chapter',
             'stag_registry',
             'name_of_breeder',
             'farm_address',
@@ -39,7 +38,6 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
     {
 
         $stag = Stag::select(
-            'chapter',
             'stag_registry',
             'breeder_name',
             'farm_address',
