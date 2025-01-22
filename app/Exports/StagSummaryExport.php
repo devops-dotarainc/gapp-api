@@ -27,6 +27,7 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
     public function headings(): array
     {
         return [
+            'chapter',
             'stag_registry',
             'name_of_breeder',
             'farm_address',
@@ -36,13 +37,19 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
 
     public function collection()
     {
-        return Stag::select(
+
+        $stag = Stag::select(
+            'chapter',
             'stag_registry',
             'breeder_name',
             'farm_address',
             'banded_cockerels',
-        )
-            ->where('chapter', $this->chapter)
-            ->get();
+        );
+
+        if (! is_null($this->chapter)) {
+            $stag = $stag->where('chapter', $this->chapter);
+        }
+
+        return $stag->get();
     }
 }

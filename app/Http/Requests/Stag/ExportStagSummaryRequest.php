@@ -22,7 +22,7 @@ class ExportStagSummaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'chapter' => ['required', 'string'],
+            'chapter' => ['string'],
         ];
     }
 }
