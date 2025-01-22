@@ -29,8 +29,8 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
         return [
             'stag_registry',
             'name_of_breeder',
-            'farm_address',
             'stag_count',
+            'farm_address',
         ];
     }
 
@@ -40,8 +40,8 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
         $stag = Stag::select(
             'stag_registry',
             'breeder_name',
-            'farm_address',
             'banded_cockerels',
+            'farm_address',
         );
 
         if (! is_null($this->chapter)) {
