@@ -19,6 +19,7 @@ class StagController extends Controller
 
             return Excel::download(new StagSummaryExport($chapter), 'chapter_summary.csv', \Maatwebsite\Excel\Excel::CSV, [
                 'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="chapter_summary.csv"',
             ]);
 
         } catch (\Exception $e) {
