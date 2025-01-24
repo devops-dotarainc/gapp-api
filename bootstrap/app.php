@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\CorsMiddleware;
+use App\Http\Middleware\QueryLog;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
@@ -20,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
+        ]);
+
+        $middleware->api(prepend: [
+            QueryLog::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
