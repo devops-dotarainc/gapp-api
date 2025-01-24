@@ -21,6 +21,7 @@ class WingbandImport implements ToCollection, WithHeadingRow
     {
         $arrayData = [];
         $duplicateWingband = [];
+        $dateError = [];
 
         $rows = $rows->filter(function ($row) {
             $fieldsToCheck = [
@@ -77,11 +78,13 @@ class WingbandImport implements ToCollection, WithHeadingRow
 
             if (! $seasons) {
                 Log::info('failed: '.$convertedDate);
-                throw new \Exception(json_encode($arrayData));
+                $dateError[] = $row['row_no'];
+                $seasons = new \stdClass;
+                $seasons->value = 1;
             }
 
             $checkWingband = Wingband::where('wingband_number', $row['wingband_no'])
-                ->where('season', $seasons)
+                ->where('season', $seasons->value)
                 ->orderBy('created_at', 'desc')
                 ->first();
 
@@ -166,11 +169,11 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $checkChapter->save();
             }
 
-            $season = ModelsSeason::where('season', $seasons)->where('year', now()->year)->first();
+            $season = ModelsSeason::where('season', $seasons->value)->where('year', now()->year)->first();
 
             if (! $season) {
                 $season = new ModelsSeason;
-                $season->season = $seasons;
+                $season->season = $seasons->value;
                 $season->entry += 1;
                 $season->year = now()->year;
                 $season->save();
@@ -182,17 +185,20 @@ class WingbandImport implements ToCollection, WithHeadingRow
 
         if (count($arrayData) > 0) {
             $arrayData['unsaved_data'] = true;
-            $duplicateWingband['duplicate_data'] = false;
 
             throw new \Exception(json_encode($arrayData));
         }
 
         if (count($duplicateWingband) > 0) {
-            $arrayData['unsaved_data'] = false;
             $duplicateWingband['duplicate_data'] = true;
 
             throw new \Exception(json_encode($duplicateWingband));
         }
 
+        if (count($dateError) > 0) {
+            $dateError['date_error'] = true;
+
+            throw new \Exception(json_encode($dateError));
+        }
     }
 }

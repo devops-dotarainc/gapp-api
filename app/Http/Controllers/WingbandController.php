@@ -353,6 +353,17 @@ class WingbandController extends Controller
                         Response::HTTP_INTERNAL_SERVER_ERROR
                     );
                 }
+                if (isset($errMsg->date_error) && $errMsg->date_error === true) {
+                    unset($errMsg->date_error);
+
+                    $values = array_values((array) $errMsg);
+                    $valueString = implode(', ', $values);
+
+                    return new ApiErrorResponse(
+                        'Failed to import excel data, please check the following row number for date error! Rows: '.$valueString,
+                        Response::HTTP_INTERNAL_SERVER_ERROR
+                    );
+                }
             }
 
             return new ApiErrorResponse(
