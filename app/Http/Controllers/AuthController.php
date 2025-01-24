@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         $user->save();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token', [$user->role->label()])->plainTextToken;
 
         return new ApiSuccessResponse(
             [

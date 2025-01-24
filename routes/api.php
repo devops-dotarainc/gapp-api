@@ -18,7 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
         Route::post('/update/{id}', [WingbandController::class, 'update']);
         Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
-    });
+    })->middleware('ability:encoder');
 
     /* seasons */
     Route::prefix('season')->group(function () {
@@ -33,7 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('stags', [SummaryController::class, 'getStags']);
         Route::get('statistics', [SummaryController::class, 'getStatistics']);
     });
-
 });
 
 Route::prefix('stag')->group(function () {
@@ -50,7 +49,7 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
     Route::get('users', [UserController::class, 'index']);
     Route::prefix('user')->group(function () {
         Route::post('/', [UserController::class, 'store']);
