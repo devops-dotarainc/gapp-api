@@ -29,6 +29,7 @@ class Wingband extends Model
         'season',
         'status',
         'wingband_date',
+        'chapter',
         'created_by',
         'updated_by',
         'deleted_by',
