@@ -199,6 +199,7 @@ class WingbandController extends Controller
                     'feet_markings' => $request['feet_markings'],
                     'season' => $seasons,
                     'wingband_date' => $date,
+                    'chapter' => $request['chapter'],
                     'created_by' => auth()->user()->id,
                 ]);
 

@@ -103,6 +103,7 @@ class WingbandImport implements ToCollection, WithHeadingRow
                     'feet_markings' => $row['feet_markings'],
                     'season' => $seasons->value,
                     'wingband_date' => $convertedDate,
+                    'chapter' => $row['chapter'],
                     'created_by' => auth()->user()->id,
                 ]);
             } else {
