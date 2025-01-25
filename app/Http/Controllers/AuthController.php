@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\GetIpHelper;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class AuthController extends Controller
         $user->tokens()->delete();
 
         $user->last_login_at = now()->format('Y-m-d H:i:s.u');
-        $user->last_login_ip = $request->getClientIp();
+        $user->last_login_ip = GetIpHelper::getIp();
 
         $user->save();
 
