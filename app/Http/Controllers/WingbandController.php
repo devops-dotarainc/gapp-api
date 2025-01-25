@@ -51,6 +51,7 @@ class WingbandController extends Controller
                 'feet_markings',
                 'wingband_date',
                 'season',
+                'status',
                 'created_by',
             );
 
