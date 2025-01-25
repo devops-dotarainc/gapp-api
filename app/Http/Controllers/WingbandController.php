@@ -62,6 +62,10 @@ class WingbandController extends Controller
             $wingbands->where('season', $request->season);
         }
 
+        if (isset($request->chapter)) {
+            $wingbands->where('chapter', 'LIKE', $request->chapter . '%');
+        }
+
         if (isset($request->stag_registry)) {
             $wingbands->where('stag_registry', $request->stag_registry);
         }
