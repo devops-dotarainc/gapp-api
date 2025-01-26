@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Season\SeasonRequest;
-use App\Http\Responses\ApiSuccessResponse;
 use App\Models\Season;
 use App\Models\Wingband;
+use App\Classes\ActivityLogClass;
+use App\Http\Responses\ApiSuccessResponse;
+use App\Http\Requests\Season\SeasonRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 class SeasonController extends Controller
@@ -38,6 +39,8 @@ class SeasonController extends Controller
             'data' => $seasons,
             'total_entry' => $seasons->sum('entry'),
         ];
+
+        ActivityLogClass::create('Season Count Registry', $seasons);
 
         return new ApiSuccessResponse(
             $data,

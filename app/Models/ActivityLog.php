@@ -17,17 +17,12 @@ class ActivityLog extends Model
         'module',
         'controller',
         'function',
+        'description',
         'table_name',
         'table_id',
         'old_value',
         'new_value',
-        'host',
-        'path',
-        'url',
-        'referer',
-        'method',
         'ip',
         'request',
-        'agent',
     ];
 }

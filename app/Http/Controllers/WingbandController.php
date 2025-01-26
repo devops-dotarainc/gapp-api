@@ -2,142 +2,167 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Enums\Role;
+use App\Models\Farm;
+use App\Models\Stag;
 use App\Enums\Season;
-use App\Helpers\Cryptor;
-use App\Http\Requests\Wingband\ImportWingbandRequest;
-use App\Http\Requests\Wingband\IndexRequest;
-use App\Http\Requests\Wingband\StoreWingbandRequest;
-use App\Http\Requests\Wingband\UpdateRequest;
-use App\Http\Responses\ApiErrorResponse;
-use App\Http\Responses\ApiSuccessResponse;
-use App\Imports\WingbandImport;
 use App\Models\Breeder;
 use App\Models\Chapter;
-use App\Models\Farm;
-use App\Models\Season as ModelsSeason;
-use App\Models\Stag;
+use App\Helpers\Cryptor;
 use App\Models\Wingband;
-use Carbon\Carbon;
+use App\Imports\WingbandImport;
+use App\Classes\ActivityLogClass;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Season as ModelsSeason;
+use App\Http\Responses\ApiErrorResponse;
+use App\Http\Responses\ApiSuccessResponse;
+use App\Http\Requests\Wingband\IndexRequest;
+use App\Http\Requests\Wingband\UpdateRequest;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Requests\Wingband\StoreWingbandRequest;
+use App\Http\Requests\Wingband\ImportWingbandRequest;
 
 class WingbandController extends Controller
 {
     public function index(IndexRequest $request)
     {
-        $limit = $request->limit ?? 50;
+        try {
+            $limit = $request->limit ?? 50;
 
-        $sort = $request->sort ?? 'id';
+            $sort = $request->sort ?? 'id';
 
-        $order = $request->order ?? 'asc';
+            $order = $request->order ?? 'asc';
 
-        $wingbands = Wingband::with('user:id,username')
-            ->select(
-                'id',
-                'stag_registry',
-                'breeder_name',
-                'farm_name',
-                'farm_address',
-                'province',
-                'wingband_number',
-                'feather_color',
-                'leg_color',
-                'comb_shape',
-                'nose_markings',
-                'feet_markings',
-                'wingband_date',
-                'season',
-                'status',
-                'created_by',
+            $wingbands = Wingband::with('user:id,username')
+                ->select(
+                    'id',
+                    'stag_registry',
+                    'breeder_name',
+                    'farm_name',
+                    'farm_address',
+                    'province',
+                    'wingband_number',
+                    'feather_color',
+                    'leg_color',
+                    'comb_shape',
+                    'nose_markings',
+                    'feet_markings',
+                    'wingband_date',
+                    'season',
+                    'status',
+                    'created_by',
+                );
+
+            if (auth()->user()->role == Role::ENCODER) {
+                $wingbands->where('created_by', auth()->user()->id);
+            }
+
+            if (isset($request->season)) {
+                $wingbands->where('season', $request->season);
+            }
+
+            if (isset($request->chapter)) {
+                $wingbands->where('chapter', 'LIKE', $request->chapter . '%');
+            }
+
+            if (isset($request->stag_registry)) {
+                $wingbands->where('stag_registry', $request->stag_registry);
+            }
+
+            if (isset($request->breeder_name)) {
+                $wingbands->where('breeder_name', $request->breeder_name);
+            }
+
+            if (isset($request->wingband_number)) {
+                $wingbands->where('wingband_number', $request->wingband_number);
+            }
+
+            if (isset($request->updated_by)) {
+                $wingbands->where('created_by', Cryptor::decrypt($request->updated_by));
+            }
+
+            if (isset($request->wingband_year)) {
+                $wingbands->whereYear('wingband_date', $request->wingband_year);
+            }
+
+            if (isset($request->status)) {
+                $wingbands->where('status', $request->status);
+            }
+
+            if (isset($request->farm)) {
+                $farm = $request->farm;
+
+                $wingbands->where('farm_name', 'LIKE', "%$farm%");
+            }
+
+            if (isset($request->search)) {
+                $search = $request->search;
+
+                $wingbands->where('stag_registry', 'LIKE', "%$search%")
+                    ->orWhere('breeder_name', 'LIKE', "%$search%")
+                    ->orWhere('farm_name', 'LIKE', "%$search%")
+                    ->orWhere('farm_address', 'LIKE', "%$search%")
+                    ->orWhere('province', 'LIKE', "%$search%")
+                    ->orWhere('wingband_number', 'LIKE', "%$search%")
+                    ->orWhere('feather_color', 'LIKE', "%$search%")
+                    ->orWhere('leg_color', 'LIKE', "%$search%")
+                    ->orWhere('comb_shape', 'LIKE', "%$search%")
+                    ->orWhere('nose_markings', 'LIKE', "%$search%")
+                    ->orWhere('feet_markings', 'LIKE', "%$search%")
+                    ->orWhere('wingband_date', 'LIKE', "%$search%");
+            }
+
+            if ($wingbands->doesntExist()) {
+                ActivityLogClass::create('Get Wingband Data Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
+                return new ApiErrorResponse(
+                    'No wingbands found.',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            $data = $wingbands->orderBy($sort, $order)->paginate($limit);
+
+            $data->getCollection()->transform(function ($wingband) {
+                $wingband->_id = Cryptor::encrypt($wingband->id);
+                $wingband->created_by = $wingband->user->username;
+                $wingband->season_name = $wingband->season->label();
+
+                unset($wingband->user, $wingband->id, $wingband->season);
+
+                return $wingband;
+            });
+
+            ActivityLogClass::create('Get Wingband Data', $wingbands);
+
+            return new ApiSuccessResponse(
+                $data,
+                ['message' => 'Wingbands retrieved successfully!'],
+                Response::HTTP_OK
             );
+        } catch (\Exception $e) {
+            \Log::error($e);
 
-        if (auth()->user()->role == Role::ENCODER) {
-            $wingbands->where('created_by', auth()->user()->id);
-        }
+            ActivityLogClass::create('Get Wingband Data Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
 
-        if (isset($request->season)) {
-            $wingbands->where('season', $request->season);
-        }
-
-        if (isset($request->chapter)) {
-            $wingbands->where('chapter', 'LIKE', $request->chapter . '%');
-        }
-
-        if (isset($request->stag_registry)) {
-            $wingbands->where('stag_registry', $request->stag_registry);
-        }
-
-        if (isset($request->breeder_name)) {
-            $wingbands->where('breeder_name', $request->breeder_name);
-        }
-
-        if (isset($request->wingband_number)) {
-            $wingbands->where('wingband_number', $request->wingband_number);
-        }
-
-        if (isset($request->updated_by)) {
-            $wingbands->where('created_by', Cryptor::decrypt($request->updated_by));
-        }
-
-        if (isset($request->wingband_year)) {
-            $wingbands->whereYear('wingband_date', $request->wingband_year);
-        }
-
-        if (isset($request->status)) {
-            $wingbands->where('status', $request->status);
-        }
-
-        if (isset($request->farm)) {
-            $farm = $request->farm;
-
-            $wingbands->where('farm_name', 'LIKE', "%$farm%");
-        }
-
-        if (isset($request->search)) {
-            $search = $request->search;
-
-            $wingbands->where('stag_registry', 'LIKE', "%$search%")
-                ->orWhere('breeder_name', 'LIKE', "%$search%")
-                ->orWhere('farm_name', 'LIKE', "%$search%")
-                ->orWhere('farm_address', 'LIKE', "%$search%")
-                ->orWhere('province', 'LIKE', "%$search%")
-                ->orWhere('wingband_number', 'LIKE', "%$search%")
-                ->orWhere('feather_color', 'LIKE', "%$search%")
-                ->orWhere('leg_color', 'LIKE', "%$search%")
-                ->orWhere('comb_shape', 'LIKE', "%$search%")
-                ->orWhere('nose_markings', 'LIKE', "%$search%")
-                ->orWhere('feet_markings', 'LIKE', "%$search%")
-                ->orWhere('wingband_date', 'LIKE', "%$search%");
-        }
-
-        if ($wingbands->doesntExist()) {
             return new ApiErrorResponse(
-                'No wingbands found.',
-                Response::HTTP_NOT_FOUND
+                'An error occured when trying to display all wingbands!',
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                $e
             );
         }
-
-        $data = $wingbands->orderBy($sort, $order)->paginate($limit);
-
-        $data->getCollection()->transform(function ($wingband) {
-            $wingband->_id = Cryptor::encrypt($wingband->id);
-            $wingband->created_by = $wingband->user->username;
-            $wingband->season_name = $wingband->season->label();
-
-            unset($wingband->user, $wingband->id, $wingband->season);
-
-            return $wingband;
-        });
-
-        return new ApiSuccessResponse(
-            $data,
-            ['message' => 'Wingbands retrieved successfully!'],
-            Response::HTTP_OK
-        );
     }
 
     public function storeWingband(StoreWingbandRequest $requests)
@@ -165,6 +190,12 @@ class WingbandController extends Controller
                 }
 
                 if (! $seasons) {
+                    ActivityLogClass::create('Create Wingband Failed', null, [
+                        'user_id' => auth()->user()->id ?? null,
+                        'role' => auth()->user()->role->value ?? null,
+                        'status' => 'error',
+                    ]);
+
                     return new ApiErrorResponse(
                         'Invalid date, cannot set appropriate season.',
                         Response::HTTP_BAD_REQUEST
@@ -178,6 +209,13 @@ class WingbandController extends Controller
 
                 if (! is_null($checkWingband)) {
                     $wingbandDate = Carbon::parse($checkWingband->wingband_date);
+
+                    ActivityLogClass::create('Create Wingband Failed', null, [
+                        'user_id' => auth()->user()->id ?? null,
+                        'role' => auth()->user()->role->value ?? null,
+                        'status' => 'error',
+                    ]);
+
                     if ($wingbandDate->year == $date->year) {
                         return new ApiErrorResponse(
                             'Duplicate wingband number '.$checkWingband->wingband_number,
@@ -275,7 +313,9 @@ class WingbandController extends Controller
                 }
 
                 DB::commit();
-            }
+            }            
+
+            ActivityLogClass::create('Create Wingband');
 
             return new ApiSuccessResponse(
                 null,
@@ -289,6 +329,12 @@ class WingbandController extends Controller
 
             Log::error($e);
 
+            ActivityLogClass::create('Create Wingband Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'An error occured while storing wingband data.',
                 Response::HTTP_INTERNAL_SERVER_ERROR
@@ -299,6 +345,12 @@ class WingbandController extends Controller
     public function importWingband(ImportWingbandRequest $request)
     {
         if (! $request->hasFile('excel_file')) {
+            ActivityLogClass::create('Import Wingband Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'No file uploaded',
                 Response::HTTP_BAD_REQUEST
@@ -308,6 +360,12 @@ class WingbandController extends Controller
         $file = $request->file('excel_file');
 
         if ($file->getClientOriginalExtension() !== 'xlsx') {
+            ActivityLogClass::create('Import Wingband Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'Invalid file format. Only .xlsx files are allowed.',
                 Response::HTTP_BAD_REQUEST
@@ -321,6 +379,8 @@ class WingbandController extends Controller
             Excel::import(new WingbandImport, $file);
 
             DB::commit();
+
+            ActivityLogClass::create('Import Wingbands');
 
             return new ApiSuccessResponse(
                 null,
@@ -372,6 +432,12 @@ class WingbandController extends Controller
                 }
             }
 
+            ActivityLogClass::create('Import Wingband Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'An error occured while importing wingband data.',
                 Response::HTTP_INTERNAL_SERVER_ERROR
@@ -386,6 +452,12 @@ class WingbandController extends Controller
             $id = Cryptor::decrypt($id);
 
             if (! $id) {
+                ActivityLogClass::create('Update Wingband Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
                 return new ApiErrorResponse(
                     'Invalid Wingband ID.',
                     Response::HTTP_NOT_FOUND
@@ -395,6 +467,12 @@ class WingbandController extends Controller
             $wingband = Wingband::withTrashed()->find($id);
 
             if (! isset($wingband)) {
+                ActivityLogClass::create('Update Wingband Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
                 return new ApiErrorResponse(
                     'Wingband Not Found.',
                     Response::HTTP_NOT_FOUND
@@ -429,6 +507,8 @@ class WingbandController extends Controller
 
             $wingband->updated_by = auth()->user()->id;
 
+            ActivityLogClass::create('Update Wingband', $wingband);
+
             $wingband->save();
 
             return new ApiSuccessResponse(
@@ -439,6 +519,12 @@ class WingbandController extends Controller
 
         } catch (\Exception $e) {
             Log::error($e);
+
+            ActivityLogClass::create('Update Wingband Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
 
             return new ApiErrorResponse(
                 'An error occured while updating wingband data.',
@@ -454,6 +540,12 @@ class WingbandController extends Controller
             $id = Cryptor::decrypt($id);
 
             if (! $id) {
+                ActivityLogClass::create('Delete Wingband Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
                 return new ApiErrorResponse(
                     'Invalid Wingband ID.',
                     Response::HTTP_NOT_FOUND
@@ -463,6 +555,12 @@ class WingbandController extends Controller
             $wingband = Wingband::find($id);
 
             if (! isset($wingband)) {
+                ActivityLogClass::create('Delete Wingband Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
                 return new ApiErrorResponse(
                     'Wingband Not Found.',
                     Response::HTTP_NOT_FOUND
@@ -472,6 +570,8 @@ class WingbandController extends Controller
             Gate::authorize('delete', $wingband);
 
             $wingband->deleted_by = auth()->user()->id;
+
+            ActivityLogClass::create('Delete Wingband', $wingband);
 
             $wingband->delete();
 
@@ -483,6 +583,12 @@ class WingbandController extends Controller
 
         } catch (\Exception $e) {
             Log::error($e);
+
+            ActivityLogClass::create('Delete Wingband Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
 
             return new ApiErrorResponse(
                 'An error occured while updating wingband data.',

@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wingbands', [WingbandController::class, 'index']);
 
-    Route::prefix('wingband')->group(function () {
+    Route::middleware('ability:encoder')->prefix('wingband')->group(function () {
         Route::middleware([CorsMiddleware::class])
             ->post('/import-wingband', [WingbandController::class, 'importWingband']);
         Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
         Route::post('/update/{id}', [WingbandController::class, 'update']);
         Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
-    })->middleware('ability:encoder');
+    });
 
     /* seasons */
     Route::prefix('season')->group(function () {

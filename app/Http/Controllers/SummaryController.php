@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\ActivityLogClass;
 use Symfony\Component\HttpFoundation\Response;
 use App\Helpers\Cryptor;
 use App\Http\Responses\{
@@ -42,6 +43,12 @@ class SummaryController extends Controller
         }
 
         if($breeders->doesntExist()) {
+            ActivityLogClass::create('Get Breeder Data Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'No breeders found.',
                 Response::HTTP_NOT_FOUND
@@ -54,6 +61,8 @@ class SummaryController extends Controller
             $breeder->_id = Cryptor::encrypt($breeder->id);
             return $breeder;
         });
+
+        ActivityLogClass::create('Get Breeder Data', $breeders);
 
         return new ApiSuccessResponse(
             $data,
@@ -79,6 +88,12 @@ class SummaryController extends Controller
         }
 
         if($chapters->doesntExist()) {
+            ActivityLogClass::create('Get Chapter Data Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'No chapters found.',
                 Response::HTTP_NOT_FOUND
@@ -91,6 +106,8 @@ class SummaryController extends Controller
             $chapter->_id = Cryptor::encrypt($chapter->id);
             return $chapter;
         });
+
+        ActivityLogClass::create('Get Chapter Data', $chapters);
 
         return new ApiSuccessResponse(
             $data,
@@ -118,6 +135,12 @@ class SummaryController extends Controller
         }
 
         if($farms->doesntExist()) {
+            ActivityLogClass::create('Get Farm Data Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'No farms found.',
                 Response::HTTP_NOT_FOUND
@@ -130,6 +153,8 @@ class SummaryController extends Controller
             $farms->_id = Cryptor::encrypt($farms->id);
             return $farms;
         });
+
+        ActivityLogClass::create('Get Farm Data', $farms);
 
         return new ApiSuccessResponse(
             $data,
@@ -159,6 +184,12 @@ class SummaryController extends Controller
         }
 
         if($stags->doesntExist()) {
+            ActivityLogClass::create('Get Stag Data Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'No stags found.',
                 Response::HTTP_NOT_FOUND
@@ -171,6 +202,8 @@ class SummaryController extends Controller
             $stag->_id = Cryptor::encrypt($stag->id);
             return $stag;
         });
+
+        ActivityLogClass::create('Get Stag Data', $stags);
 
         return new ApiSuccessResponse(
             $data,
@@ -186,6 +219,8 @@ class SummaryController extends Controller
         $farmCount = Farm::count();
         $stagCount = Stag::count();
         $breederCount = Breeder::count();
+
+        ActivityLogClass::create('Get Statistic Data');
 
         return new ApiSuccessResponse(
             [

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Role;
 use Carbon\Carbon;
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Classes\ActivityLogClass;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\User\ShowRequest;
@@ -41,12 +42,14 @@ class UserController extends Controller
                     ->orWhere('contact_number', 'LIKE', "%$search%");
             }
 
+            ActivityLogClass::create('Get User Data', $users);
+
             $users = $users->orderBy($sort, $order)
-                ->paginate($limit);
+                ->paginate($limit);            
 
             $users->getCollection()->transform(function ($user) {
                 return $user;
-            });
+            });            
 
             return new ApiSuccessResponse(
                 $users,
@@ -56,6 +59,14 @@ class UserController extends Controller
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
+            \Log::error($exception);
+
+            ActivityLogClass::create('Get User Data Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'An error occured when trying to list all users!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -72,6 +83,8 @@ class UserController extends Controller
 
             $user = User::create($request->all());
 
+            ActivityLogClass::create('Create User', $user);
+
             return new ApiSuccessResponse(
                 $user,
                 [
@@ -80,6 +93,14 @@ class UserController extends Controller
                 Response::HTTP_CREATED,
             );
         } catch (\Throwable $exception) {
+            \Log::error($exception);
+
+            ActivityLogClass::create('Create User Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'An error occured when trying to create a user!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -101,6 +122,8 @@ class UserController extends Controller
                 );
             }
 
+            ActivityLogClass::create('Show User Data', $user);
+
             return new ApiSuccessResponse(
                 $user,
                 [
@@ -109,6 +132,14 @@ class UserController extends Controller
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
+            \Log::error($exception);
+
+            ActivityLogClass::create('Show User Data Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'An error occured when trying to list all users!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -123,6 +154,12 @@ class UserController extends Controller
             $user = User::find($id);
 
             if (!$user) {
+                ActivityLogClass::create('Update User Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
                 return new ApiErrorResponse(
                     'User not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -159,6 +196,12 @@ class UserController extends Controller
                 //password confirmation
 
                 if ($user->password === $request['password']) {
+                    ActivityLogClass::create('Update User Failed', null, [
+                        'user_id' => auth()->user()->id ?? null,
+                        'role' => auth()->user()->role->value ?? null,
+                        'status' => 'error',
+                    ]);
+
                     return new ApiErrorResponse(
                         'Cannot use current password as new password!',
                         Response::HTTP_BAD_REQUEST,
@@ -171,14 +214,22 @@ class UserController extends Controller
             }
 
             if($user->isClean()) {
+                ActivityLogClass::create('Update User Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
                 return new ApiErrorResponse(
                     'No changes made.',
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
 
-            $user->save();
+            ActivityLogClass::create('Update User', $user);
 
+            $user->save();
+            
             return new ApiSuccessResponse(
                 $user,
                 [
@@ -187,6 +238,14 @@ class UserController extends Controller
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
+            \Log::error($exception);
+
+            ActivityLogClass::create('Update User Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'An error occured when trying to update a user!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -210,6 +269,12 @@ class UserController extends Controller
             Gate::authorize('delete', $user);
 
             if(auth()->user()->id === $user->id) {
+                ActivityLogClass::create('Delete User Failed', null, [
+                    'user_id' => auth()->user()->id ?? null,
+                    'role' => auth()->user()->role->value ?? null,
+                    'status' => 'error',
+                ]);
+
                 return new ApiErrorResponse(
                     'Cannot delete your own account!',
                     Response::HTTP_BAD_REQUEST,
@@ -217,6 +282,8 @@ class UserController extends Controller
             }
 
             $user->tokens()->delete();
+
+            ActivityLogClass::create('Delete User', $user);
 
             $user->delete();
 
@@ -228,6 +295,14 @@ class UserController extends Controller
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
+            \Log::error($exception);
+
+            ActivityLogClass::create('Delete User Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'An error occured when trying to delete a user!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,

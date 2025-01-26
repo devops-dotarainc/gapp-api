@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\ActivityLogClass;
 use App\Helpers\GetIpHelper;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Models\User;
@@ -23,6 +24,12 @@ class AuthController extends Controller
             ->first();
 
         if (!$user || !Hash::check($request['password'], $user->password)) {
+            ActivityLogClass::create('Failed Login', $user, [
+                'user_id' => isset($user) ? intval($user->id) : null,
+                'role' => isset($user) ? intval($user->role->value) : null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'Username/Password is incorrect',
                 Response::HTTP_UNAUTHORIZED,
@@ -37,6 +44,8 @@ class AuthController extends Controller
         $user->save();
 
         $token = $user->createToken('auth_token', [$user->role->label()])->plainTextToken;
+
+        ActivityLogClass::create('Login', $user);
 
         return new ApiSuccessResponse(
             [
@@ -77,6 +86,10 @@ class AuthController extends Controller
         $user = auth()->user();
 
         if (!Hash::check($request->password, $user->password)) {
+            ActivityLogClass::create('Change Password Failed', $user, [
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'Current password incorrect',
                 Response::HTTP_BAD_REQUEST,
@@ -84,6 +97,10 @@ class AuthController extends Controller
         }
 
         if ($request->password === $request->new_password) {
+            ActivityLogClass::create('Change Password Failed', $user, [
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'You cannot use your current password as your new password!',
                 Response::HTTP_BAD_REQUEST,
@@ -93,6 +110,8 @@ class AuthController extends Controller
         $user->password = Hash::make($request->new_password);
 
         $user->save();
+
+        ActivityLogClass::create('Change Password', $user);
 
         return new ApiSuccessResponse(
             [
@@ -109,6 +128,12 @@ class AuthController extends Controller
         $user = User::find($id);
 
         if(!$user){
+            ActivityLogClass::create('Delete User Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'User does not exist!',
                 Response::HTTP_UNPROCESSABLE_ENTITY,
@@ -116,6 +141,12 @@ class AuthController extends Controller
         }
 
         if(auth()->user()->id === $user->id) {
+            ActivityLogClass::create('Delete User Failed', $user, [
+                'user_id' => isset($user) ? intval($user->id) : null,
+                'role' => isset($user) ? intval($user->role->value) : null,
+                'status' => 'error',
+            ]);
+
             return new ApiErrorResponse(
                 'Cannot delete your own account!',
                 Response::HTTP_BAD_REQUEST,
@@ -125,6 +156,8 @@ class AuthController extends Controller
         $user->tokens()->delete();
 
         $user->delete();
+
+        ActivityLogClass::create('Delete User', $user);
 
         return new ApiSuccessResponse(
             null,
@@ -140,6 +173,8 @@ class AuthController extends Controller
         auth()->user()->tokens()->delete();
 
         auth()->user()->save();
+
+        ActivityLogClass::create('Logout', auth()->user());
 
         return new ApiSuccessResponse(
             null,

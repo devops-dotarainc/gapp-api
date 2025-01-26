@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\ActivityLogClass;
 use App\Exports\StagSummaryExport;
-use App\Http\Requests\Stag\ExportStagSummaryRequest;
-use App\Http\Responses\ApiErrorResponse;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Responses\ApiErrorResponse;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Requests\Stag\ExportStagSummaryRequest;
 
 class StagController extends Controller
 {
@@ -24,6 +25,12 @@ class StagController extends Controller
 
         } catch (\Exception $e) {
             Log::error($e);
+
+            ActivityLogClass::create('Export Stag Summary Failed', null, [
+                'user_id' => auth()->user()->id ?? null,
+                'role' => auth()->user()->role->value ?? null,
+                'status' => 'error',
+            ]);
 
             return new ApiErrorResponse(
                 'An error occured while exporting data.',

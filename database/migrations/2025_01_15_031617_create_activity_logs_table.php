@@ -15,22 +15,17 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedTinyInteger('role')->nullable();
-            $table->unsignedTinyInteger('status')->nullable();
+            $table->string('status')->nullable();
             $table->string('module')->nullable();
             $table->string('controller')->nullable();
             $table->string('function')->nullable();
+            $table->string('description')->nullable();
             $table->string('table_name')->nullable();
             $table->string('table_id')->nullable();
-            $table->string('old_value')->nullable();
-            $table->string('new_value')->nullable();
-            $table->string('host')->nullable();
-            $table->string('path')->nullable();
-            $table->string('url')->nullable();
-            $table->string('referer')->nullable();
-            $table->string('method')->nullable();
+            $table->text('old_value')->nullable();
+            $table->text('new_value')->nullable();
             $table->string('ip')->nullable();
-            $table->string('request')->nullable();
-            $table->string('agent')->nullable();
+            $table->text('request')->nullable();
             $table->timestamps();
         });
     }

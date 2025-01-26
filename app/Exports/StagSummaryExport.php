@@ -3,9 +3,10 @@
 namespace App\Exports;
 
 use App\Models\Stag;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use App\Classes\ActivityLogClass;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
@@ -47,6 +48,8 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
         if (! is_null($this->chapter)) {
             $stag = $stag->where('chapter', $this->chapter);
         }
+
+        ActivityLogClass::create('Stag Summary Export', $stag);
 
         return $stag->get();
     }
