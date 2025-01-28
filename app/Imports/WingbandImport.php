@@ -113,7 +113,11 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 }
             }
 
-            $checkStag = Stag::where('stag_registry', $row['stag_registry_no'])->first();
+            $checkStag = Stag::where('stag_registry', $row['stag_registry_no'])
+                ->where('farm_name', ucwords($row['farm_name']))
+                ->where('farm_address', ucwords($row['farm_address']))
+                ->where('breeder_name', ucwords($row['name_of_breeders']))
+                ->first();
 
             if (! $checkStag) {
                 $stag = new Stag;
@@ -129,7 +133,11 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $checkStag->save();
             }
 
-            $checkBreeder = Breeder::where('name', ucwords($row['name_of_breeders']))->first();
+            $checkBreeder = Breeder::where('name', ucwords($row['name_of_breeders']))
+                ->where('farm_name', ucwords($row['farm_name']))
+                ->where('farm_address', ucwords($row['farm_address']))
+                ->where('chapter', ucfirst($row['chapter']))
+                ->first();
 
             if (! $checkBreeder) {
                 $breeder = new Breeder;
@@ -144,7 +152,10 @@ class WingbandImport implements ToCollection, WithHeadingRow
                 $checkBreeder->save();
             }
 
-            $checkFarm = Farm::where('name', ucwords($row['farm_name']))->first();
+            $checkFarm = Farm::where('name', ucwords($row['farm_name']))
+                ->where('address', ucwords($row['farm_address']))
+                ->where('breeder_name', ucwords($row['name_of_breeders']))
+                ->first();
 
             if (! $checkFarm) {
                 $farm = new Farm;

@@ -242,7 +242,11 @@ class WingbandController extends Controller
                     'created_by' => auth()->user()->id,
                 ]);
 
-                $checkStag = Stag::where('stag_registry', $request['stag_number'])->first();
+                $checkStag = Stag::where('stag_registry', $request['stag_number'])
+                    ->where('farm_name', ucwords($request['farm_name']))
+                    ->where('farm_address', ucwords($request['farm_address']))
+                    ->where('breeder_name', ucwords($request['breeders']))
+                    ->first();
 
                 if (! $checkStag) {
                     $stag = new Stag;
@@ -258,7 +262,11 @@ class WingbandController extends Controller
                     $checkStag->save();
                 }
 
-                $checkBreeder = Breeder::where('name', ucwords($request['breeders']))->first();
+                $checkBreeder = Breeder::where('name', ucwords($request['breeders']))
+                    ->where('farm_name', ucwords($request['farm_name']))
+                    ->where('farm_address', ucwords($request['farm_address']))
+                    ->where('chapter', ucfirst($request['chapter']))
+                    ->first();
 
                 if (! $checkBreeder) {
                     $breeder = new Breeder;
@@ -273,7 +281,10 @@ class WingbandController extends Controller
                     $checkBreeder->save();
                 }
 
-                $checkFarm = Farm::where('name', ucwords($request['farm_name']))->first();
+                $checkFarm = Farm::where('name', ucwords($request['farm_name']))
+                    ->where('address', ucwords($request['farm_address']))
+                    ->where('breeder_name', ucwords($request['breeders']))
+                    ->first();
 
                 if (! $checkFarm) {
                     $farm = new Farm;
