@@ -25,6 +25,7 @@ use App\Http\Requests\Wingband\UpdateRequest;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Requests\Wingband\StoreWingbandRequest;
 use App\Http\Requests\Wingband\ImportWingbandRequest;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class WingbandController extends Controller
 {
@@ -102,7 +103,8 @@ class WingbandController extends Controller
             if (isset($request->search)) {
                 $search = $request->search;
 
-                $wingbands->where('stag_registry', 'LIKE', "%$search%")
+                $wingbands->where(function (Builder $query) use ($search) {
+                    $query->where('stag_registry', 'LIKE', "%$search%")
                     ->orWhere('breeder_name', 'LIKE', "%$search%")
                     ->orWhere('farm_name', 'LIKE', "%$search%")
                     ->orWhere('farm_address', 'LIKE', "%$search%")
@@ -114,6 +116,7 @@ class WingbandController extends Controller
                     ->orWhere('nose_markings', 'LIKE', "%$search%")
                     ->orWhere('feet_markings', 'LIKE', "%$search%")
                     ->orWhere('wingband_date', 'LIKE', "%$search%");
+                });
             }
 
             if ($wingbands->doesntExist()) {
