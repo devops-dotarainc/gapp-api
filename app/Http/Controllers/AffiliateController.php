@@ -102,7 +102,11 @@ class AffiliateController extends Controller
                 $request['image'] = $imageName;
             }
 
-            $affiliate = Affiliate::create($request->all());
+            $data = $request->all();
+
+            $data['image'] = $imageName;
+
+            $affiliate = Affiliate::create($data);
 
             ActivityLogClass::create('Create Affiliate', $affiliate);
 
