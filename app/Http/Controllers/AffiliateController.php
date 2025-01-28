@@ -3,27 +3,29 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Enums\Role;
-use App\Models\User;
+use App\Models\Affiliate;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Classes\ActivityLogClass;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\User\ShowRequest;
-use App\Http\Requests\User\IndexRequest;
-use App\Http\Requests\User\StoreRequest;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Responses\ApiErrorResponse;
-use App\Http\Requests\User\DeleteRequest;
-use App\Http\Requests\User\UpdateRequest;
 use App\Http\Responses\ApiSuccessResponse;
+use App\Http\Requests\Affiliate\ShowRequest;
+use App\Http\Requests\Affiliate\IndexRequest;
+use App\Http\Requests\Affiliate\StoreRequest;
+use App\Http\Requests\Affiliate\DeleteRequest;
+use App\Http\Requests\Affiliate\UpdateRequest;
 
-class UserController extends Controller
+class AffiliateController extends Controller
 {
     public function index(IndexRequest $request)
     {
         try {
-            $users = new User;
+            $affiiliates = new Affiliate;
 
             $sort = $request['sort'] ?? 'id';
 
@@ -31,44 +33,53 @@ class UserController extends Controller
 
             $limit = $request['limit'] ?? 50;
 
-            if (isset($request['username'])) {
-                $users = $users->where('username', $request['username']);
+            if (isset($request['name'])) {
+                $affiiliates = $affiiliates->where('name', $request['name']);
+            }
+
+            if (isset($request['location'])) {
+                $affiiliates = $affiiliates->where('location', $request['location']);
+            }
+
+            if (isset($request['contact_number'])) {
+                $affiiliates = $affiiliates->where('contact_number', $request['contact_number']);
             }
 
             if (isset($request['search'])) {
                 $search = $request['search'];
 
-                $users = $users->where('username', 'LIKE', "%$search%")
+                $affiiliates = $affiiliates->where('name', 'LIKE', "%$search%")
+                    ->orWhere('location', 'LIKE', "%$search%")
                     ->orWhere('contact_number', 'LIKE', "%$search%");
             }
 
-            ActivityLogClass::create('Get User Data');
+            ActivityLogClass::create('Get Affiliate Data');
 
-            $users = $users->orderBy($sort, $order)
+            $affiiliates = $affiiliates->orderBy($sort, $order)
                 ->paginate($limit);
 
-            $users->getCollection()->transform(function ($user) {
-                return $user;
+            $affiiliates->getCollection()->transform(function ($affiiliate) {
+                return $affiiliate;
             });
 
             return new ApiSuccessResponse(
-                $users,
+                $affiiliates,
                 [
-                    'message' => 'Users retrieved succesfully!',
+                    'message' => 'Affiliates retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Get User Data Failed', null, [
+            ActivityLogClass::create('Get Affiliate Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to list all users!',
+                'An error occured when trying to list all affiliates!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -81,28 +92,38 @@ class UserController extends Controller
             $request['created_at'] = Carbon::now()->format('Y-m-d H:i:s.u');
             $request['created_by'] = auth()->user()->id;
 
-            $user = User::create($request->all());
+            if (isset($request['image'])) {
+                $image = $request['image'];
 
-            ActivityLogClass::create('Create User', $user);
+                $imageName = "gapp-image" . "-" . Carbon::now()->format("YmdHis") . '.' . $image->getClientOriginalExtension();
+
+                Storage::disk('local')->put("gapp/{$imageName}", file_get_contents($image));
+
+                $request['image'] = $imageName;
+            }
+
+            $affiliate = Affiliate::create($request->all());
+
+            ActivityLogClass::create('Create Affiliate', $affiliate);
 
             return new ApiSuccessResponse(
-                $user,
+                $affiliate,
                 [
-                    'message' => 'User created succesfully!',
+                    'message' => 'Affiliate created succesfully!',
                 ],
                 Response::HTTP_CREATED,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Create User Failed', null, [
+            ActivityLogClass::create('Create Affiliate Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to create a user!',
+                'An error occured when trying to create an affiliate!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -113,35 +134,35 @@ class UserController extends Controller
     public function show(ShowRequest $request, $id)
     {
         try {
-            $user = User::find($id);
+            $affiliate = Affiliate::find($id);
 
-            if (!$user) {
+            if (!$affiliate) {
                 return new ApiErrorResponse(
-                    'User not found!',
+                    'Affiliate not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            ActivityLogClass::create('Show User Data', $user);
+            ActivityLogClass::create('Show Affiliate Data', $affiliate);
 
             return new ApiSuccessResponse(
-                $user,
+                $affiliate,
                 [
-                    'message' => 'User retrieved succesfully!',
+                    'message' => 'Affiliate retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Show User Data Failed', null, [
+            ActivityLogClass::create('Show Affiliate Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to list all users!',
+                'An error occured when trying to show an affiliate!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -151,70 +172,37 @@ class UserController extends Controller
     public function update(UpdateRequest $request, $id)
     {
         try {
-            $user = User::find($id);
+            $affiliate = Affiliate::find($id);
 
-            if (!$user) {
-                ActivityLogClass::create('Update User Failed', null, [
+            if (!$affiliate) {
+                ActivityLogClass::create('Update Affiliate Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
                 ]);
 
                 return new ApiErrorResponse(
-                    'User not found!',
+                    'Affiliate not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            Gate::authorize('update', $user);
+            Gate::authorize('update', $affiliate);
 
-            if (isset($request['username'])) {
-                $user->username = $request['username'];
+            if (isset($request['name'])) {
+                $affiliate->name = $request['name'];
             }
 
-            if (isset($request['first_name'])) {
-                $user->first_name = $request['first_name'];
-            }
-
-            if (isset($request['last_name'])) {
-                $user->last_name = $request['last_name'];
-            }
-
-            if (isset($request['email'])) {
-                $user->email = $request['email'];
+            if (isset($request['location'])) {
+                $affiliate->location = $request['location'];
             }
 
             if (isset($request['contact_number'])) {
-                $user->contact_number = $request['contact_number'];
+                $affiliate->contact_number = $request['contact_number'];
             }
 
-            if (isset($request['role'])) {
-                $user->role = $request['role'];
-            }
-
-            if (isset($request['password'])) {
-                //password confirmation
-
-                if ($user->password === $request['password']) {
-                    ActivityLogClass::create('Update User Failed', null, [
-                        'user_id' => auth()->user()->id ?? null,
-                        'role' => auth()->user()->role->value ?? null,
-                        'status' => 'error',
-                    ]);
-
-                    return new ApiErrorResponse(
-                        'Cannot use current password as new password!',
-                        Response::HTTP_BAD_REQUEST,
-                    );
-                }
-
-                $user->password = Hash::make($request['password']);
-
-                $user->tokens()->delete();
-            }
-
-            if ($user->isClean()) {
-                ActivityLogClass::create('Update User Failed', null, [
+            if ($affiliate->isClean()) {
+                ActivityLogClass::create('Update Affiliate Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
@@ -226,21 +214,21 @@ class UserController extends Controller
                 );
             }
 
-            ActivityLogClass::create('Update User', $user);
+            ActivityLogClass::create('Update Affiliate', $affiliate);
 
-            $user->save();
+            $affiliate->save();
 
             return new ApiSuccessResponse(
-                $user,
+                $affiliate,
                 [
-                    'message' => 'User updated succesfully!',
+                    'message' => 'Affiliate updated succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Update User Failed', null, [
+            ActivityLogClass::create('Update Affiliate Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
@@ -257,54 +245,39 @@ class UserController extends Controller
     public function delete(DeleteRequest $request, $id)
     {
         try {
-            $user = User::find($id);
+            $affiiliate = Affiliate::find($id);
 
-            if (!$user) {
+            if (!$affiiliate) {
                 return new ApiErrorResponse(
-                    'User does not exist!',
+                    'Affiliate does not exist!',
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
 
-            Gate::authorize('delete', $user);
+            Gate::authorize('delete', $affiiliate);
 
-            if (auth()->user()->id === $user->id) {
-                ActivityLogClass::create('Delete User Failed', null, [
-                    'user_id' => auth()->user()->id ?? null,
-                    'role' => auth()->user()->role->value ?? null,
-                    'status' => 'error',
-                ]);
+            ActivityLogClass::create('Delete Affiliate', $affiiliate);
 
-                return new ApiErrorResponse(
-                    'Cannot delete your own account!',
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
-
-            $user->tokens()->delete();
-
-            ActivityLogClass::create('Delete User', $user);
-
-            $user->delete();
+            $affiiliate->delete();
 
             return new ApiSuccessResponse(
                 null,
                 [
-                    'message' => 'User deleted successfully!',
+                    'message' => 'Affiliate deleted successfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Delete User Failed', null, [
+            ActivityLogClass::create('Delete Affiliate Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to delete a user!',
+                'An error occured when trying to delete an affiliate!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );

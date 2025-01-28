@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HallOfFameController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\StagController;
 use App\Http\Controllers\SummaryController;
@@ -56,5 +58,21 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::get('/{id}', [UserController::class, 'show']);
         Route::post('/update/{id}', [UserController::class, 'update']);
         Route::any('/delete/{id}', [UserController::class, 'delete']);
+    });
+
+    Route::get('affiliates', [AffiliateController::class, 'index']);
+    Route::prefix('affiliate')->group(function () {
+        Route::post('/', [AffiliateController::class, 'store']);
+        Route::get('/{id}', [AffiliateController::class, 'show']);
+        Route::post('/update/{id}', [AffiliateController::class, 'update']);
+        Route::any('/delete/{id}', [AffiliateController::class, 'delete']);
+    });
+
+    Route::get('hofs', [HallOfFameController::class, 'index']);
+    Route::prefix('hof')->group(function () {
+        Route::post('/', [HallOfFameController::class, 'store']);
+        Route::get('/{id}', [HallOfFameController::class, 'show']);
+        Route::post('/update/{id}', [HallOfFameController::class, 'update']);
+        Route::any('/delete/{id}', [HallOfFameController::class, 'delete']);
     });
 });

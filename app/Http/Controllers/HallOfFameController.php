@@ -3,27 +3,26 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Enums\Role;
-use App\Models\User;
+use App\Models\HallOfFame;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Classes\ActivityLogClass;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\User\ShowRequest;
-use App\Http\Requests\User\IndexRequest;
-use App\Http\Requests\User\StoreRequest;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Responses\ApiErrorResponse;
-use App\Http\Requests\User\DeleteRequest;
-use App\Http\Requests\User\UpdateRequest;
 use App\Http\Responses\ApiSuccessResponse;
+use App\Http\Requests\HallOfFame\ShowRequest;
+use App\Http\Requests\HallOfFame\IndexRequest;
+use App\Http\Requests\HallOfFame\StoreRequest;
+use App\Http\Requests\HallOfFame\DeleteRequest;
+use App\Http\Requests\HallOfFame\UpdateRequest;
 
-class UserController extends Controller
+class HallOfFameController extends Controller
 {
     public function index(IndexRequest $request)
     {
         try {
-            $users = new User;
+            $fames = new HallOfFame();
 
             $sort = $request['sort'] ?? 'id';
 
@@ -31,44 +30,43 @@ class UserController extends Controller
 
             $limit = $request['limit'] ?? 50;
 
-            if (isset($request['username'])) {
-                $users = $users->where('username', $request['username']);
+            if (isset($request['year'])) {
+                $fames = $fames->where('year', $request['year']);
             }
 
             if (isset($request['search'])) {
                 $search = $request['search'];
 
-                $users = $users->where('username', 'LIKE', "%$search%")
-                    ->orWhere('contact_number', 'LIKE', "%$search%");
+                $fames = $fames->where('year', 'LIKE', "%$search%");
             }
 
-            ActivityLogClass::create('Get User Data');
+            ActivityLogClass::create('Get HallOfFame Data');
 
-            $users = $users->orderBy($sort, $order)
+            $fames = $fames->orderBy($sort, $order)
                 ->paginate($limit);
 
-            $users->getCollection()->transform(function ($user) {
-                return $user;
+            $fames->getCollection()->transform(function ($fame) {
+                return $fame;
             });
 
             return new ApiSuccessResponse(
-                $users,
+                $fames,
                 [
-                    'message' => 'Users retrieved succesfully!',
+                    'message' => 'HallOfFame retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Get User Data Failed', null, [
+            ActivityLogClass::create('Get HallOfFame Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to list all users!',
+                'An error occured when trying to list all HallOfFame!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -81,28 +79,38 @@ class UserController extends Controller
             $request['created_at'] = Carbon::now()->format('Y-m-d H:i:s.u');
             $request['created_by'] = auth()->user()->id;
 
-            $user = User::create($request->all());
+            if (isset($request['image'])) {
+                $image = $request['image'];
 
-            ActivityLogClass::create('Create User', $user);
+                $imageName = "gapp-image" . "-" . Carbon::now()->format("YmdHis") . '.' . $image->getClientOriginalExtension();
+
+                Storage::disk('local')->put("gapp/{$imageName}", file_get_contents($image));
+
+                $request['image'] = $imageName;
+            }
+
+            $fame = HallOfFame::create($request->all());
+
+            ActivityLogClass::create('Create HallOfFame', $fame);
 
             return new ApiSuccessResponse(
-                $user,
+                $fame,
                 [
-                    'message' => 'User created succesfully!',
+                    'message' => 'Fame created succesfully!',
                 ],
                 Response::HTTP_CREATED,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Create User Failed', null, [
+            ActivityLogClass::create('Create HallOfFame Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to create a user!',
+                'An error occured when trying to create an HallOfFame!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -113,35 +121,35 @@ class UserController extends Controller
     public function show(ShowRequest $request, $id)
     {
         try {
-            $user = User::find($id);
+            $fame = HallOfFame::find($id);
 
-            if (!$user) {
+            if (!$fame) {
                 return new ApiErrorResponse(
-                    'User not found!',
+                    'HallOfFame not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            ActivityLogClass::create('Show User Data', $user);
+            ActivityLogClass::create('Show HallOfFame Data', $fame);
 
             return new ApiSuccessResponse(
-                $user,
+                $fame,
                 [
-                    'message' => 'User retrieved succesfully!',
+                    'message' => 'HallOfFame retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Show User Data Failed', null, [
+            ActivityLogClass::create('Show HallOfFame Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to list all users!',
+                'An error occured when trying to show HallOfFame!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -151,70 +159,29 @@ class UserController extends Controller
     public function update(UpdateRequest $request, $id)
     {
         try {
-            $user = User::find($id);
+            $fame = HallOfFame::find($id);
 
-            if (!$user) {
-                ActivityLogClass::create('Update User Failed', null, [
+            if (!$fame) {
+                ActivityLogClass::create('Update HallOfFame Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
                 ]);
 
                 return new ApiErrorResponse(
-                    'User not found!',
+                    'HallOfFame not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            Gate::authorize('update', $user);
+            Gate::authorize('update', $fame);
 
-            if (isset($request['username'])) {
-                $user->username = $request['username'];
+            if (isset($request['year'])) {
+                $fame->year = $request['year'];
             }
 
-            if (isset($request['first_name'])) {
-                $user->first_name = $request['first_name'];
-            }
-
-            if (isset($request['last_name'])) {
-                $user->last_name = $request['last_name'];
-            }
-
-            if (isset($request['email'])) {
-                $user->email = $request['email'];
-            }
-
-            if (isset($request['contact_number'])) {
-                $user->contact_number = $request['contact_number'];
-            }
-
-            if (isset($request['role'])) {
-                $user->role = $request['role'];
-            }
-
-            if (isset($request['password'])) {
-                //password confirmation
-
-                if ($user->password === $request['password']) {
-                    ActivityLogClass::create('Update User Failed', null, [
-                        'user_id' => auth()->user()->id ?? null,
-                        'role' => auth()->user()->role->value ?? null,
-                        'status' => 'error',
-                    ]);
-
-                    return new ApiErrorResponse(
-                        'Cannot use current password as new password!',
-                        Response::HTTP_BAD_REQUEST,
-                    );
-                }
-
-                $user->password = Hash::make($request['password']);
-
-                $user->tokens()->delete();
-            }
-
-            if ($user->isClean()) {
-                ActivityLogClass::create('Update User Failed', null, [
+            if ($fame->isClean()) {
+                ActivityLogClass::create('Update HallOfFame Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
@@ -226,21 +193,21 @@ class UserController extends Controller
                 );
             }
 
-            ActivityLogClass::create('Update User', $user);
+            ActivityLogClass::create('Update HallOfFame', $fame);
 
-            $user->save();
+            $fame->save();
 
             return new ApiSuccessResponse(
-                $user,
+                $fame,
                 [
-                    'message' => 'User updated succesfully!',
+                    'message' => 'HallOfFame updated succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Update User Failed', null, [
+            ActivityLogClass::create('Update HallOfFame Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
@@ -257,54 +224,39 @@ class UserController extends Controller
     public function delete(DeleteRequest $request, $id)
     {
         try {
-            $user = User::find($id);
+            $fame = HallOfFame::find($id);
 
-            if (!$user) {
+            if (!$fame) {
                 return new ApiErrorResponse(
-                    'User does not exist!',
+                    'HallOfFame does not exist!',
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
 
-            Gate::authorize('delete', $user);
+            Gate::authorize('delete', $fame);
 
-            if (auth()->user()->id === $user->id) {
-                ActivityLogClass::create('Delete User Failed', null, [
-                    'user_id' => auth()->user()->id ?? null,
-                    'role' => auth()->user()->role->value ?? null,
-                    'status' => 'error',
-                ]);
+            ActivityLogClass::create('Delete HallOfFame', $fame);
 
-                return new ApiErrorResponse(
-                    'Cannot delete your own account!',
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
-
-            $user->tokens()->delete();
-
-            ActivityLogClass::create('Delete User', $user);
-
-            $user->delete();
+            $fame->delete();
 
             return new ApiSuccessResponse(
                 null,
                 [
-                    'message' => 'User deleted successfully!',
+                    'message' => 'HallOfFame deleted successfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Delete User Failed', null, [
+            ActivityLogClass::create('Delete HallOfFame Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to delete a user!',
+                'An error occured when trying to delete a HallOfFame!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
