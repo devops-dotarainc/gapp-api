@@ -92,6 +92,8 @@ class AffiliateController extends Controller
             $request['created_at'] = Carbon::now()->format('Y-m-d H:i:s.u');
             $request['created_by'] = auth()->user()->id;
 
+            $data = $request->all();
+
             if (isset($request['image'])) {
                 $image = $request['image'];
 
@@ -99,12 +101,8 @@ class AffiliateController extends Controller
 
                 Storage::disk('local')->put("gapp/{$imageName}", file_get_contents($image));
 
-                $request['image'] = $imageName;
+                $data['image'] = $imageName;
             }
-
-            $data = $request->all();
-
-            $data['image'] = $imageName;
 
             $affiliate = Affiliate::create($data);
 
