@@ -62,7 +62,7 @@ class SummaryController extends Controller
             return $breeder;
         });
 
-        ActivityLogClass::create('Get Breeder Data', $breeders);
+        ActivityLogClass::create('Get Breeder Data');
 
         return new ApiSuccessResponse(
             $data,
@@ -107,7 +107,7 @@ class SummaryController extends Controller
             return $chapter;
         });
 
-        ActivityLogClass::create('Get Chapter Data', $chapters);
+        ActivityLogClass::create('Get Chapter Data');
 
         return new ApiSuccessResponse(
             $data,
@@ -154,7 +154,7 @@ class SummaryController extends Controller
             return $farms;
         });
 
-        ActivityLogClass::create('Get Farm Data', $farms);
+        ActivityLogClass::create('Get Farm Data');
 
         return new ApiSuccessResponse(
             $data,
@@ -203,7 +203,7 @@ class SummaryController extends Controller
             return $stag;
         });
 
-        ActivityLogClass::create('Get Stag Data', $stags);
+        ActivityLogClass::create('Get Stag Data');
 
         return new ApiSuccessResponse(
             $data,

@@ -49,7 +49,7 @@ class StagSummaryExport implements FromCollection, WithHeadings, WithStyles
             $stag = $stag->where('chapter', $this->chapter);
         }
 
-        ActivityLogClass::create('Stag Summary Export', $stag);
+        ActivityLogClass::create('Stag Summary Export');
 
         return $stag->get();
     }

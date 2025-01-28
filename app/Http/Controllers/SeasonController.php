@@ -40,7 +40,7 @@ class SeasonController extends Controller
             'total_entry' => $seasons->sum('entry'),
         ];
 
-        ActivityLogClass::create('Season Count Registry', $seasons);
+        ActivityLogClass::create('Season Count Registry');
 
         return new ApiSuccessResponse(
             $data,

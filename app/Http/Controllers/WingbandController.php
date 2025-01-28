@@ -141,7 +141,7 @@ class WingbandController extends Controller
                 return $wingband;
             });
 
-            ActivityLogClass::create('Get Wingband Data', $wingbands);
+            ActivityLogClass::create('Get Wingband Data');
 
             return new ApiSuccessResponse(
                 $data,

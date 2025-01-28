@@ -42,7 +42,7 @@ class UserController extends Controller
                     ->orWhere('contact_number', 'LIKE', "%$search%");
             }
 
-            ActivityLogClass::create('Get User Data', $users);
+            ActivityLogClass::create('Get User Data');
 
             $users = $users->orderBy($sort, $order)
                 ->paginate($limit);            
