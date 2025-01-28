@@ -26,7 +26,6 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => ['required', 'string', 'max:255'],
             'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:10240'],
         ];
     }
