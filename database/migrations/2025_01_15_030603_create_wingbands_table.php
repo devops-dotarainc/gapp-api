@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('farm_name')->nullable();
             $table->string('farm_address')->nullable();
             $table->string('province')->nullable();
-            $table->unsignedBigInteger('wingband_number')->nullable();
+            $table->string('wingband_number')->nullable();
             $table->string('feather_color')->nullable();
             $table->string('leg_color')->nullable();
             $table->string('comb_shape')->nullable();
