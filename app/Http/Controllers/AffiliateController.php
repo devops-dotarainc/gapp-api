@@ -99,7 +99,7 @@ class AffiliateController extends Controller
 
                 $imageName = "gapp-image" . "-" . Carbon::now()->format("YmdHis") . '.' . $image->getClientOriginalExtension();
 
-                Storage::disk('local')->put("gapp/{$imageName}", file_get_contents($image));
+                Storage::put("gapp/{$imageName}", file_get_contents($image));
 
                 $data['image'] = $imageName;
             }

@@ -79,17 +79,19 @@ class HallOfFameController extends Controller
             $request['created_at'] = Carbon::now()->format('Y-m-d H:i:s.u');
             $request['created_by'] = auth()->user()->id;
 
+            $data = $request->all();
+
             if (isset($request['image'])) {
                 $image = $request['image'];
 
                 $imageName = "gapp-image" . "-" . Carbon::now()->format("YmdHis") . '.' . $image->getClientOriginalExtension();
 
-                Storage::disk('local')->put("gapp/{$imageName}", file_get_contents($image));
+                Storage::put("gapp/{$imageName}", file_get_contents($image));
 
-                $request['image'] = $imageName;
+                $data['image'] = $imageName;
             }
 
-            $fame = HallOfFame::create($request->all());
+            $fame = HallOfFame::create($data);
 
             ActivityLogClass::create('Create HallOfFame', $fame);
 

@@ -26,8 +26,8 @@ return new class extends Migration
             $table->string('feet_markings')->nullable();
             $table->string('season')->nullable();
             $table->unsignedTinyInteger('status')->default(1);
-            $table->date('wingband_date');
-            $table->unsignedBigInteger('created_by');
+            $table->date('wingband_date')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamps();
