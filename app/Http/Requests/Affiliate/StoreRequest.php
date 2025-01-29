@@ -27,6 +27,10 @@ class StoreRequest extends FormRequest
     {
         return [
             'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:10240'],
+            'location' => ['string'],
+            'name' => ['string', 'required'],
+            'contact_number' => ['string', 'min:11', 'max:11'],
+            'island_group' => ['integer', 'in:1,2,3'],
         ];
     }
 }

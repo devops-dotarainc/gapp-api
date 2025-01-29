@@ -10,11 +10,15 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('hall_of_fames', function (Blueprint $table) {
+        Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('year')->nullable();
-            $table->string('image')->nullable();
-            $table->dateTime('event_date')->nullable();
+            $table->string('address')->nullable();
+            $table->string('telephone_number')->nullable();
+            $table->string('email')->nullable();
+            $table->string('twitter_url')->nullable();
+            $table->string('facebook_url')->nullable();
+            $table->string('youtube_url')->nullable();
+            $table->string('linkedin_url')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
@@ -28,6 +32,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('hall_of_fames');
+        Schema::dropIfExists('settings');
     }
 };

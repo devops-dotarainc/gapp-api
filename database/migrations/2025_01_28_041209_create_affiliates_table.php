@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('location')->nullable();
             $table->string('contact_number')->nullable();
             $table->string('image')->nullable();
+            $table->integer('island_group')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();

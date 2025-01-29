@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\HallOfFame;
+namespace App\Http\Requests\Binding;
 
 use Illuminate\Foundation\Http\FormRequest;
 

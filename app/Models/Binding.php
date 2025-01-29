@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Affiliate extends Model
+class Binding extends Model
 {
     protected $fillable = [
-        'name',
+        'year',
         'image',
-        'contact_number',
-        'location',
-        'island_group',
+        'event_date',
         'created_by',
         'updated_by',
         'deleted_by',

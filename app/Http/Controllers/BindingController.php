@@ -3,26 +3,26 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\HallOfFame;
+use App\Models\Binding;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Classes\ActivityLogClass;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Responses\ApiErrorResponse;
+use App\Http\Requests\Binding\ShowRequest;
 use App\Http\Responses\ApiSuccessResponse;
-use App\Http\Requests\HallOfFame\ShowRequest;
-use App\Http\Requests\HallOfFame\IndexRequest;
-use App\Http\Requests\HallOfFame\StoreRequest;
-use App\Http\Requests\HallOfFame\DeleteRequest;
-use App\Http\Requests\HallOfFame\UpdateRequest;
+use App\Http\Requests\Binding\IndexRequest;
+use App\Http\Requests\Binding\StoreRequest;
+use App\Http\Requests\Binding\DeleteRequest;
+use App\Http\Requests\Binding\UpdateRequest;
 
-class HallOfFameController extends Controller
+class BindingController extends Controller
 {
     public function index(IndexRequest $request)
     {
         try {
-            $fames = new HallOfFame();
+            $bindings = new Binding();
 
             $sort = $request['sort'] ?? 'id';
 
@@ -31,42 +31,42 @@ class HallOfFameController extends Controller
             $limit = $request['limit'] ?? 50;
 
             if (isset($request['year'])) {
-                $fames = $fames->where('year', $request['year']);
+                $bindings = $bindings->where('year', $request['year']);
             }
 
             if (isset($request['search'])) {
                 $search = $request['search'];
 
-                $fames = $fames->where('year', 'LIKE', "%$search%");
+                $bindings = $bindings->where('year', 'LIKE', "%$search%");
             }
 
-            ActivityLogClass::create('Get HallOfFame Data');
+            ActivityLogClass::create('Get Binding Data');
 
-            $fames = $fames->orderBy($sort, $order)
+            $bindings = $bindings->orderBy($sort, $order)
                 ->paginate($limit);
 
-            $fames->getCollection()->transform(function ($fame) {
-                return $fame;
+            $bindings->getCollection()->transform(function ($binding) {
+                return $binding;
             });
 
             return new ApiSuccessResponse(
-                $fames,
+                $bindings,
                 [
-                    'message' => 'HallOfFame retrieved succesfully!',
+                    'message' => 'Bindings retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Get HallOfFame Data Failed', null, [
+            ActivityLogClass::create('Get Binding Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to list all HallOfFame!',
+                'An error occured when trying to list all Bindings!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -91,28 +91,28 @@ class HallOfFameController extends Controller
                 $data['image'] = $imageName;
             }
 
-            $fame = HallOfFame::create($data);
+            $binding = Binding::create($data);
 
-            ActivityLogClass::create('Create HallOfFame', $fame);
+            ActivityLogClass::create('Create Binding', $binding);
 
             return new ApiSuccessResponse(
-                $fame,
+                $binding,
                 [
-                    'message' => 'Fame created succesfully!',
+                    'message' => 'Binding created succesfully!',
                 ],
                 Response::HTTP_CREATED,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Create HallOfFame Failed', null, [
+            ActivityLogClass::create('Create Binding Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to create an HallOfFame!',
+                'An error occured when trying to create an Binding!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -123,35 +123,35 @@ class HallOfFameController extends Controller
     public function show(ShowRequest $request, $id)
     {
         try {
-            $fame = HallOfFame::find($id);
+            $binding = Binding::find($id);
 
-            if (!$fame) {
+            if (!$binding) {
                 return new ApiErrorResponse(
-                    'HallOfFame not found!',
+                    'Binding not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            ActivityLogClass::create('Show HallOfFame Data', $fame);
+            ActivityLogClass::create('Show Binding Data', $binding);
 
             return new ApiSuccessResponse(
-                $fame,
+                $binding,
                 [
-                    'message' => 'HallOfFame retrieved succesfully!',
+                    'message' => 'Binding retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Show HallOfFame Data Failed', null, [
+            ActivityLogClass::create('Show Binding Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to show HallOfFame!',
+                'An error occured when trying to show Binding!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -161,33 +161,33 @@ class HallOfFameController extends Controller
     public function update(UpdateRequest $request, $id)
     {
         try {
-            $fame = HallOfFame::find($id);
+            $binding = Binding::find($id);
 
-            if (!$fame) {
-                ActivityLogClass::create('Update HallOfFame Failed', null, [
+            if (!$binding) {
+                ActivityLogClass::create('Update Binding Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
                 ]);
 
                 return new ApiErrorResponse(
-                    'HallOfFame not found!',
+                    'Binding not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            Gate::authorize('update', $fame);
+            Gate::authorize('update', $binding);
 
             if (isset($request['year'])) {
-                $fame->year = $request['year'];
+                $binding->year = $request['year'];
             }
 
             if (isset($request['event_date'])) {
-                $fame->event_date = $request['event_date'];
+                $binding->event_date = $request['event_date'];
             }
 
-            if ($fame->isClean()) {
-                ActivityLogClass::create('Update HallOfFame Failed', null, [
+            if ($binding->isClean()) {
+                ActivityLogClass::create('Update Binding Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
@@ -199,24 +199,24 @@ class HallOfFameController extends Controller
                 );
             }
 
-            $fame->updated_by = auth()->user()->id;
-            $fame->updated_at = Carbon::now()->format('Y-m-d H:i:s.u');
+            $binding->updated_by = auth()->user()->id;
+            $binding->updated_at = Carbon::now()->format('Y-m-d H:i:s.u');
 
-            ActivityLogClass::create('Update HallOfFame', $fame);
+            ActivityLogClass::create('Update Binding', $binding);
 
-            $fame->save();
+            $binding->save();
 
             return new ApiSuccessResponse(
-                $fame,
+                $binding,
                 [
-                    'message' => 'HallOfFame updated succesfully!',
+                    'message' => 'Binding updated succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Update HallOfFame Failed', null, [
+            ActivityLogClass::create('Update Binding Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
@@ -233,39 +233,39 @@ class HallOfFameController extends Controller
     public function delete(DeleteRequest $request, $id)
     {
         try {
-            $fame = HallOfFame::find($id);
+            $binding = Binding::find($id);
 
-            if (!$fame) {
+            if (!$binding) {
                 return new ApiErrorResponse(
-                    'HallOfFame does not exist!',
+                    'Binding does not exist!',
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
 
-            Gate::authorize('delete', $fame);
+            Gate::authorize('delete', $binding);
 
-            ActivityLogClass::create('Delete HallOfFame', $fame);
+            ActivityLogClass::create('Delete Binding', $binding);
 
-            $fame->delete();
+            $binding->delete();
 
             return new ApiSuccessResponse(
                 null,
                 [
-                    'message' => 'HallOfFame deleted successfully!',
+                    'message' => 'Binding deleted successfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Delete HallOfFame Failed', null, [
+            ActivityLogClass::create('Delete Binding Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to delete a HallOfFame!',
+                'An error occured when trying to delete a Binding!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );

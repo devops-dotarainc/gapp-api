@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BindingController;
 use App\Http\Controllers\HallOfFameController;
 use App\Http\Controllers\SeasonController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StagController;
 use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\UserController;
@@ -74,5 +76,21 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::get('/{id}', [HallOfFameController::class, 'show']);
         Route::post('/update/{id}', [HallOfFameController::class, 'update']);
         Route::any('/delete/{id}', [HallOfFameController::class, 'delete']);
+    });
+
+    Route::get('bindings', [BindingController::class, 'index']);
+    Route::prefix('binding')->group(function () {
+        Route::post('/', [BindingController::class, 'store']);
+        Route::get('/{id}', [BindingController::class, 'show']);
+        Route::post('/update/{id}', [BindingController::class, 'update']);
+        Route::any('/delete/{id}', [BindingController::class, 'delete']);
+    });
+
+    Route::get('settings', [SettingController::class, 'index']);
+    Route::prefix('setting')->group(function () {
+        Route::post('/', [SettingController::class, 'store']);
+        Route::get('/{id}', [SettingController::class, 'show']);
+        Route::post('/update/{id}', [SettingController::class, 'update']);
+        Route::any('/delete/{id}', [SettingController::class, 'delete']);
     });
 });

@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('hall_of_fames', function (Blueprint $table) {
+        Schema::create('bindings', function (Blueprint $table) {
             $table->id();
             $table->string('year')->nullable();
             $table->string('image')->nullable();
@@ -28,6 +28,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('hall_of_fames');
+        Schema::dropIfExists('bindings');
     }
 };

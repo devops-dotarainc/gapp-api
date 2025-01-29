@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\HallOfFame;
+namespace App\Http\Requests\Binding;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateRequest extends FormRequest
+class DeleteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,9 +26,7 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => ['string', 'min:4', 'max:4'],
-            'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:10240'],
-            'event_date' => ['date_format:Y-m-d'],
+            //
         ];
     }
 }

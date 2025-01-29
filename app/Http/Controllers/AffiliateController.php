@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Affiliate;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -203,6 +204,10 @@ class AffiliateController extends Controller
                 $affiliate->contact_number = $request['contact_number'];
             }
 
+            if (isset($request['island_group'])) {
+                $affiliate->island_group = $request['island_group'];
+            }
+
             if ($affiliate->isClean()) {
                 ActivityLogClass::create('Update Affiliate Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
@@ -215,6 +220,9 @@ class AffiliateController extends Controller
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
+
+            $affiliate->updated_by = auth()->user()->id;
+            $affiliate->updated_at = Carbon::now()->format('Y-m-d H:i:s.u');
 
             ActivityLogClass::create('Update Affiliate', $affiliate);
 
