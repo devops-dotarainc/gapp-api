@@ -186,6 +186,16 @@ class HallOfFameController extends Controller
                 $fame->event_date = $request['event_date'];
             }
 
+            if (isset($request['image'])) {
+                $image = $request['image'];
+
+                $imageName = "gapp-image" . "-" . Carbon::now()->format("YmdHis") . '.' . $image->getClientOriginalExtension();
+
+                Storage::put("gapp/{$imageName}", file_get_contents($image));
+
+                $fame->image = $imageName;
+            }
+
             if ($fame->isClean()) {
                 ActivityLogClass::create('Update HallOfFame Failed', null, [
                     'user_id' => auth()->user()->id ?? null,

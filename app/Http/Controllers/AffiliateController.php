@@ -208,6 +208,16 @@ class AffiliateController extends Controller
                 $affiliate->island_group = $request['island_group'];
             }
 
+            if (isset($request['image'])) {
+                $image = $request['image'];
+
+                $imageName = "gapp-image" . "-" . Carbon::now()->format("YmdHis") . '.' . $image->getClientOriginalExtension();
+
+                Storage::put("gapp/{$imageName}", file_get_contents($image));
+
+                $affiliate->image = $imageName;
+            }
+
             if ($affiliate->isClean()) {
                 ActivityLogClass::create('Update Affiliate Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
