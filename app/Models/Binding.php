@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Binding extends Model
 {
+    protected $table = 'bindings';
+
+    protected $dateFormat = 'Y-m-d H:i:s.u';
     protected $fillable = [
         'year',
         'image',

@@ -30,43 +30,24 @@ class SettingController extends Controller
 
             $limit = $request['limit'] ?? 50;
 
-            if (isset($request['address'])) {
-                $settings = $settings->where('address', $request['address']);
+            if (isset($request['key'])) {
+                $settings = $settings->where('key', $request['key']);
             }
 
-            if (isset($request['telephone_number'])) {
-                $settings = $settings->where('telephone_number', $request['telephone_number']);
+            if (isset($request['name'])) {
+                $settings = $settings->where('name', $request['name']);
             }
 
-            if (isset($request['email'])) {
-                $settings = $settings->where('email', $request['email']);
-            }
-
-            if (isset($request['twitter_url'])) {
-                $settings = $settings->where('twitter_url', $request['twitter_url']);
-            }
-
-            if (isset($request['facebook_url'])) {
-                $settings = $settings->where('facebook_url', $request['facebook_url']);
-            }
-
-            if (isset($request['youtube_url'])) {
-                $settings = $settings->where('youtube_url', $request['youtube_url']);
-            }
-
-            if (isset($request['linkedin_url'])) {
-                $settings = $settings->where('linkedin_url', $request['linkedin_url']);
+            if (isset($request['value'])) {
+                $settings = $settings->where('value', $request['value']);
             }
 
             if (isset($request['search'])) {
                 $search = $request['search'];
 
-                $settings = $settings->where('address', 'LIKE', "%$search%")
-                    ->orWhere('telephone_number', 'LIKE', "%$search%")
-                    ->orWhere('twitter_url', 'LIKE', "%$search%")
-                    ->orWhere('facebook_url', 'LIKE', "%$search%")
-                    ->orWhere('youtube_url', 'LIKE', "%$search%")
-                    ->orWhere('linkedin_url', 'LIKE', "%$search%");
+                $settings = $settings->where('key', 'LIKE', "%$search%")
+                    ->orWhere('name', 'LIKE', "%$search%")
+                    ->orWhere('value', 'LIKE', "%$search%");
             }
 
             ActivityLogClass::create('Get Setting Data');
@@ -109,16 +90,6 @@ class SettingController extends Controller
             $request['created_by'] = auth()->user()->id;
 
             $data = $request->all();
-
-            if (isset($request['image'])) {
-                $image = $request['image'];
-
-                $imageName = "gapp-image" . "-" . Carbon::now()->format("YmdHis") . '.' . $image->getClientOriginalExtension();
-
-                Storage::put("gapp/{$imageName}", file_get_contents($image));
-
-                $data['image'] = $imageName;
-            }
 
             $setting = Setting::create($data);
 
@@ -207,32 +178,16 @@ class SettingController extends Controller
 
             Gate::authorize('update', $setting);
 
-            if (isset($request['address'])) {
-                $setting->address = $request['address'];
+            if (isset($request['key'])) {
+                $setting->key = $request['key'];
             }
 
-            if (isset($request['email'])) {
-                $setting->email = $request['email'];
+            if (isset($request['name'])) {
+                $setting->name = $request['name'];
             }
 
-            if (isset($request['telephone_number'])) {
-                $setting->telephone_number = $request['telephone_number'];
-            }
-
-            if (isset($request['twitter_url'])) {
-                $setting->twitter_url = $request['twitter_url'];
-            }
-
-            if (isset($request['facebook_url'])) {
-                $setting->facebook_url = $request['facebook_url'];
-            }
-
-            if (isset($request['youtube_url'])) {
-                $setting->youtube_url = $request['youtube_url'];
-            }
-
-            if (isset($request['linkedin_url'])) {
-                $setting->linkedin_url = $request['linkedin_url'];
+            if (isset($request['value'])) {
+                $setting->value = $request['value'];
             }
 
             if ($setting->isClean()) {

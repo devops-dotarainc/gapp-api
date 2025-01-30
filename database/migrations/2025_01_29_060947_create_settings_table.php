@@ -12,13 +12,9 @@ return new class extends Migration {
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('address')->nullable();
-            $table->string('telephone_number')->nullable();
-            $table->string('email')->nullable();
-            $table->string('twitter_url')->nullable();
-            $table->string('facebook_url')->nullable();
-            $table->string('youtube_url')->nullable();
-            $table->string('linkedin_url')->nullable();
+            $table->string('key')->nullable();
+            $table->string('name')->nullable();
+            $table->string('value')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();

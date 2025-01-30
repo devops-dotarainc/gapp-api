@@ -26,13 +26,9 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'address' => ['string'],
-            'telephone_number' => ['string'],
-            'email' => ['email'],
-            'twitter_url' => ['string'],
-            'facebook_url' => ['string'],
-            'youtube_url' => ['string'],
-            'linkedin_url' => ['string'],
+            'key' => ['string'],
+            'name' => ['string'],
+            'value' => ['string'],
         ];
     }
 }

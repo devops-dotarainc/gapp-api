@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
+    protected $table = 'settings';
+
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = [
-        'address',
-        'telephone_number',
-        'email',
-        'twitter_url',
-        'facebook_url',
-        'youtube_url',
-        'linkedin_url',
+        'key',
+        'name',
+        'value',
         'created_by',
         'updated_by',
         'deleted_by',

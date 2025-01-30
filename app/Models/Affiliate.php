@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Affiliate extends Model
 {
+    protected $table = 'affiliates';
+
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = [
         'name',
         'image',

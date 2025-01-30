@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class HallOfFame extends Model
 {
+    protected $table = 'hall_of_fames';
+
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     protected $fillable = [
         'year',
         'image',

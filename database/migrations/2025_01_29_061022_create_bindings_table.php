@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('year')->nullable();
             $table->string('image')->nullable();
-            $table->dateTime('event_date')->nullable();
+            $table->timestamp('event_date')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
