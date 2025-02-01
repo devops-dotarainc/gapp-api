@@ -29,6 +29,17 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class WingbandController extends Controller
 {
+    /**
+     * @response scenario=success {
+     *  "status": "success,
+     *  "message": "Wingbands Retrieved Successfully",
+     *  "data": []
+     * }
+     * @response status=404 scenario="no wingbands found" {
+     *  "status": "error",
+     *  "message": "No wingbands found."
+     * }
+     */
     public function index(IndexRequest $request)
     {
         try {
@@ -105,17 +116,17 @@ class WingbandController extends Controller
 
                 $wingbands->where(function (Builder $query) use ($search) {
                     $query->where('stag_registry', 'LIKE', "%$search%")
-                    ->orWhere('breeder_name', 'LIKE', "%$search%")
-                    ->orWhere('farm_name', 'LIKE', "%$search%")
-                    ->orWhere('farm_address', 'LIKE', "%$search%")
-                    ->orWhere('province', 'LIKE', "%$search%")
-                    ->orWhere('wingband_number', 'LIKE', "%$search%")
-                    ->orWhere('feather_color', 'LIKE', "%$search%")
-                    ->orWhere('leg_color', 'LIKE', "%$search%")
-                    ->orWhere('comb_shape', 'LIKE', "%$search%")
-                    ->orWhere('nose_markings', 'LIKE', "%$search%")
-                    ->orWhere('feet_markings', 'LIKE', "%$search%")
-                    ->orWhere('wingband_date', 'LIKE', "%$search%");
+                        ->orWhere('breeder_name', 'LIKE', "%$search%")
+                        ->orWhere('farm_name', 'LIKE', "%$search%")
+                        ->orWhere('farm_address', 'LIKE', "%$search%")
+                        ->orWhere('province', 'LIKE', "%$search%")
+                        ->orWhere('wingband_number', 'LIKE', "%$search%")
+                        ->orWhere('feather_color', 'LIKE', "%$search%")
+                        ->orWhere('leg_color', 'LIKE', "%$search%")
+                        ->orWhere('comb_shape', 'LIKE', "%$search%")
+                        ->orWhere('nose_markings', 'LIKE', "%$search%")
+                        ->orWhere('feet_markings', 'LIKE', "%$search%")
+                        ->orWhere('wingband_date', 'LIKE', "%$search%");
                 });
             }
 
@@ -146,11 +157,16 @@ class WingbandController extends Controller
 
             ActivityLogClass::create('Get Wingband Data');
 
-            return new ApiSuccessResponse(
-                $data,
-                ['message' => 'Wingbands retrieved successfully!'],
-                Response::HTTP_OK
-            );
+            // return new ApiSuccessResponse(
+            //     $data,
+            //     ['message' => 'Wingbands retrieved successfully!'],
+            //     Response::HTTP_OK
+            // );
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Wingbands retrieved successfully'
+            ]);
         } catch (\Exception $e) {
             \Log::error($e);
 
@@ -221,7 +237,7 @@ class WingbandController extends Controller
 
                     if ($wingbandDate->year == $date->year) {
                         return new ApiErrorResponse(
-                            'Duplicate wingband number '.$checkWingband->wingband_number,
+                            'Duplicate wingband number ' . $checkWingband->wingband_number,
                             Response::HTTP_BAD_REQUEST
                         );
                     }
@@ -327,7 +343,7 @@ class WingbandController extends Controller
                 }
 
                 DB::commit();
-            }            
+            }
 
             ActivityLogClass::create('Create Wingband');
 
@@ -336,7 +352,6 @@ class WingbandController extends Controller
                 ['message' => 'Wingbands created successfully!'],
                 Response::HTTP_CREATED
             );
-
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -401,7 +416,6 @@ class WingbandController extends Controller
                 ['message' => 'Wingbands imported successfully please check the excel data uploaded to the system'],
                 Response::HTTP_CREATED
             );
-
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -418,7 +432,7 @@ class WingbandController extends Controller
                     $valueString = implode(', ', $values);
 
                     return new ApiErrorResponse(
-                        'Failed to import excel data, please check the following row number for blank data! Rows: '.$valueString,
+                        'Failed to import excel data, please check the following row number for blank data! Rows: ' . $valueString,
                         Response::HTTP_INTERNAL_SERVER_ERROR
                     );
                 }
@@ -429,7 +443,7 @@ class WingbandController extends Controller
                     $valueString = implode(', ', $values);
 
                     return new ApiErrorResponse(
-                        'Failed to import excel data, please check the following row number for duplicate wingband data! Rows: '.$valueString,
+                        'Failed to import excel data, please check the following row number for duplicate wingband data! Rows: ' . $valueString,
                         Response::HTTP_INTERNAL_SERVER_ERROR
                     );
                 }
@@ -440,7 +454,7 @@ class WingbandController extends Controller
                     $valueString = implode(', ', $values);
 
                     return new ApiErrorResponse(
-                        'Failed to import excel data, please check the following row number for date error! Rows: '.$valueString,
+                        'Failed to import excel data, please check the following row number for date error! Rows: ' . $valueString,
                         Response::HTTP_INTERNAL_SERVER_ERROR
                     );
                 }
@@ -530,7 +544,6 @@ class WingbandController extends Controller
                 ['message' => 'Wingband updated successfully.'],
                 Response::HTTP_CREATED
             );
-
         } catch (\Exception $e) {
             Log::error($e);
 
@@ -594,7 +607,6 @@ class WingbandController extends Controller
                 ['message' => 'Wingband deleted successfully.'],
                 Response::HTTP_CREATED
             );
-
         } catch (\Exception $e) {
             Log::error($e);
 
