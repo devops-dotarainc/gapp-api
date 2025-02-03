@@ -69,7 +69,6 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::any('/delete/{id}', [AffiliateController::class, 'delete']);
     });
 
-    Route::get('hofs', [HallOfFameController::class, 'index']);
     Route::prefix('hof')->group(function () {
         Route::post('/', [HallOfFameController::class, 'store']);
         Route::get('/{id}', [HallOfFameController::class, 'show']);
@@ -77,7 +76,6 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::any('/delete/{id}', [HallOfFameController::class, 'delete']);
     });
 
-    Route::get('bindings', [BindingController::class, 'index']);
     Route::prefix('binding')->group(function () {
         Route::post('/', [BindingController::class, 'store']);
         Route::get('/{id}', [BindingController::class, 'show']);
@@ -93,5 +91,7 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
     });
 });
 
+Route::get('bindings', [BindingController::class, 'index']);
+Route::get('hofs', [HallOfFameController::class, 'index']);
 Route::get('settings', [SettingController::class, 'index']);
 Route::get('affiliates', [AffiliateController::class, 'index']);
