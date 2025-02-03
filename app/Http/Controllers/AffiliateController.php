@@ -46,6 +46,12 @@ class AffiliateController extends Controller
                 $affiiliates = $affiiliates->where('contact_number', $request['contact_number']);
             }
 
+            if (isset($request['island_group'])) {
+                $search = $request['island_group'];
+
+                $affiiliates = $affiiliates->where('island_group', 'LIKE', "%$search%");
+            }
+
             if (isset($request['search'])) {
                 $search = $request['search'];
 
