@@ -62,7 +62,6 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::any('/delete/{id}', [UserController::class, 'delete']);
     });
 
-    Route::get('affiliates', [AffiliateController::class, 'index']);
     Route::prefix('affiliate')->group(function () {
         Route::post('/', [AffiliateController::class, 'store']);
         Route::get('/{id}', [AffiliateController::class, 'show']);
@@ -86,7 +85,6 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::any('/delete/{id}', [BindingController::class, 'delete']);
     });
 
-    Route::get('settings', [SettingController::class, 'index']);
     Route::prefix('setting')->group(function () {
         Route::post('/', [SettingController::class, 'store']);
         Route::get('/{id}', [SettingController::class, 'show']);
@@ -94,3 +92,6 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::any('/delete/{id}', [SettingController::class, 'delete']);
     });
 });
+
+Route::get('settings', [SettingController::class, 'index']);
+Route::get('affiliates', [AffiliateController::class, 'index']);
