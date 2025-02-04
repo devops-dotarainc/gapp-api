@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Season;
 use App\Models\Wingband;
 use App\Classes\ActivityLogClass;
+use App\Enums\Role;
 use App\Http\Responses\ApiSuccessResponse;
 use App\Http\Requests\Season\SeasonRequest;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,19 +19,32 @@ class SeasonController extends Controller
         $seasons = Season::where('year', $validated['year'])->get();
 
         $seasons->transform(function ($season) {
-            if ($season->id == 1) {
-                $earlybirdCount = Wingband::where('created_by', auth()->user()->id)->where('season', 1)->count();
-                $season->entry = $earlybirdCount;
-            } elseif ($season->id == 2) {
-                $localCount = Wingband::where('created_by', auth()->user()->id)->where('season', 2)->count();
-                $season->entry = $localCount;
-            } elseif ($season->id == 3) {
-                $nationalCount = Wingband::where('created_by', auth()->user()->id)->where('season', 3)->count();
-                $season->entry = $nationalCount;
-            } elseif ($season->id == 4) {
-                $latebornCount = Wingband::where('created_by', auth()->user()->id)->where('season', 4)->count();
-                $season->entry = $latebornCount;
+            // if ($season->id == 1) {
+            //     $earlybirdCount = Wingband::where('season', 1);
+
+            //     if(auth()->user()->role == Role::ENCODER) {
+            //         $earlybirdCount->where('created_by', auth()->user()->id);
+            //     }
+
+            //     $season->entry = $earlybirdCount->count();
+            // } elseif ($season->id == 2) {
+            //     $localCount = Wingband::where('created_by', auth()->user()->id)->where('season', 2)->count();
+            //     $season->entry = $localCount;
+            // } elseif ($season->id == 3) {
+            //     $nationalCount = Wingband::where('created_by', auth()->user()->id)->where('season', 3)->count();
+            //     $season->entry = $nationalCount;
+            // } elseif ($season->id == 4) {
+            //     $latebornCount = Wingband::where('created_by', auth()->user()->id)->where('season', 4)->count();
+            //     $season->entry = $latebornCount;
+            // }
+
+            $earlybirdCount = Wingband::where('season', $season->season);
+
+            if(auth()->user()->role == Role::ENCODER) {
+                $earlybirdCount->where('created_by', auth()->user()->id);
             }
+
+            $season->entry = $earlybirdCount->count();
 
             return $season;
         });
