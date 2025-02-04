@@ -2,31 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use Schedule;
 use Carbon\Carbon;
-use App\Models\Affiliate;
-use Carbon\CarbonInterface;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Classes\ActivityLogClass;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Responses\ApiErrorResponse;
 use App\Http\Responses\ApiSuccessResponse;
-use App\Http\Requests\Affiliate\ShowRequest;
-use App\Http\Requests\Affiliate\IndexRequest;
-use App\Http\Requests\Affiliate\StoreRequest;
-use App\Http\Requests\Affiliate\DeleteRequest;
-use App\Http\Requests\Affiliate\UpdateRequest;
+use App\Http\Requests\Schedule\ShowRequest;
+use App\Http\Requests\Schedule\IndexRequest;
+use App\Http\Requests\Schedule\StoreRequest;
+use App\Http\Requests\Schedule\DeleteRequest;
+use App\Http\Requests\Schedule\UpdateRequest;
 
-class AffiliateController extends Controller
+class ScheduleController extends Controller
 {
     public function index(IndexRequest $request)
     {
         try {
-            $affiiliates = new Affiliate;
+            $schedules = new Schedule();
 
             $sort = $request['sort'] ?? 'id';
 
@@ -34,57 +30,53 @@ class AffiliateController extends Controller
 
             $limit = $request['limit'] ?? 50;
 
-            if (isset($request['name'])) {
-                $affiiliates = $affiiliates->where('name', $request['name']);
+            if (isset($request['title'])) {
+                $schedules = $schedules->where('title', $request['title']);
             }
 
-            if (isset($request['location'])) {
-                $affiiliates = $affiiliates->where('location', $request['location']);
+            if (isset($request['description'])) {
+                $schedules = $schedules->where('description', $request['description']);
             }
 
-            if (isset($request['contact_number'])) {
-                $affiiliates = $affiiliates->where('contact_number', $request['contact_number']);
-            }
-
-            if (isset($request['island_group'])) {
-                $affiiliates = $affiiliates->where('island_group', $request['island_group']);
+            if (isset($request['background_color'])) {
+                $schedules = $schedules->where('background_color', $request['background_color']);
             }
 
             if (isset($request['search'])) {
                 $search = $request['search'];
 
-                $affiiliates = $affiiliates->where('name', 'LIKE', "%$search%")
-                    ->orWhere('location', 'LIKE', "%$search%")
-                    ->orWhere('contact_number', 'LIKE', "%$search%");
+                $schedules = $schedules->where('title', 'LIKE', "%$search%")
+                    ->orWhere('description', 'LIKE', "%$search%")
+                    ->orWhere('background_color', 'LIKE', "%$search%");
             }
 
-            ActivityLogClass::create('Get Affiliate Data');
+            ActivityLogClass::create('Get Schedule Data');
 
-            $affiiliates = $affiiliates->orderBy($sort, $order)
+            $schedules = $schedules->orderBy($sort, $order)
                 ->paginate($limit);
 
-            $affiiliates->getCollection()->transform(function ($affiiliate) {
-                return $affiiliate;
+            $schedules->getCollection()->transform(function ($schedule) {
+                return $schedule;
             });
 
             return new ApiSuccessResponse(
-                $affiiliates,
+                $schedules,
                 [
-                    'message' => 'Affiliates retrieved succesfully!',
+                    'message' => 'Schedules retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Get Affiliate Data Failed', null, [
+            ActivityLogClass::create('Get Schedule Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to list all affiliates!',
+                'An error occured when trying to list all schedules!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -109,28 +101,28 @@ class AffiliateController extends Controller
                 $data['image'] = $imageName;
             }
 
-            $affiliate = Affiliate::create($data);
+            $schedule = Schedule::create($data);
 
-            ActivityLogClass::create('Create Affiliate', $affiliate);
+            ActivityLogClass::create('Create Schedule', $schedule);
 
             return new ApiSuccessResponse(
-                $affiliate,
+                $schedule,
                 [
-                    'message' => 'Affiliate created succesfully!',
+                    'message' => 'Schedule created succesfully!',
                 ],
                 Response::HTTP_CREATED,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Create Affiliate Failed', null, [
+            ActivityLogClass::create('Create Schedule Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to create an affiliate!',
+                'An error occured when trying to create an schedule!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -141,35 +133,35 @@ class AffiliateController extends Controller
     public function show(ShowRequest $request, $id)
     {
         try {
-            $affiliate = Affiliate::find($id);
+            $schedule = Schedule::find($id);
 
-            if (!$affiliate) {
+            if (!$schedule) {
                 return new ApiErrorResponse(
-                    'Affiliate not found!',
+                    'Schedule not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            ActivityLogClass::create('Show Affiliate Data', $affiliate);
+            ActivityLogClass::create('Show Schedule Data', $schedule);
 
             return new ApiSuccessResponse(
-                $affiliate,
+                $schedule,
                 [
-                    'message' => 'Affiliate retrieved succesfully!',
+                    'message' => 'Schedule retrieved succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Show Affiliate Data Failed', null, [
+            ActivityLogClass::create('Show Schedule Data Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to show an affiliate!',
+                'An error occured when trying to show an schedule!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -179,41 +171,33 @@ class AffiliateController extends Controller
     public function update(UpdateRequest $request, $id)
     {
         try {
-            $affiliate = Affiliate::find($id);
+            $schedule = Schedule::find($id);
 
-            if (!$affiliate) {
-                ActivityLogClass::create('Update Affiliate Failed', null, [
+            if (!$schedule) {
+                ActivityLogClass::create('Update Schedule Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
                 ]);
 
                 return new ApiErrorResponse(
-                    'Affiliate not found!',
+                    'Schedule not found!',
                     Response::HTTP_INTERNAL_SERVER_ERROR,
                 );
             }
 
-            Gate::authorize('update', $affiliate);
+            Gate::authorize('update', $schedule);
 
-            if (isset($request['name'])) {
-                $affiliate->name = $request['name'];
+            if (isset($request['title'])) {
+                $schedule->title = $request['title'];
             }
 
-            if (isset($request['location'])) {
-                $affiliate->location = $request['location'];
+            if (isset($request['description'])) {
+                $schedule->description = $request['description'];
             }
 
-            if (isset($request['contact_number'])) {
-                $affiliate->contact_number = $request['contact_number'];
-            }
-
-            if (isset($request['island_group'])) {
-                $affiliate->island_group = $request['island_group'];
-            }
-
-            if (isset($request['position'])) {
-                $affiliate->position = $request['position'];
+            if (isset($request['background_color'])) {
+                $schedule->background_color = $request['background_color'];
             }
 
             if (isset($request['image'])) {
@@ -223,11 +207,11 @@ class AffiliateController extends Controller
 
                 Storage::put("gapp/{$imageName}", file_get_contents($image));
 
-                $affiliate->image = $imageName;
+                $schedule->image = $imageName;
             }
 
-            if ($affiliate->isClean()) {
-                ActivityLogClass::create('Update Affiliate Failed', null, [
+            if ($schedule->isClean()) {
+                ActivityLogClass::create('Update Schedule Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
                     'role' => auth()->user()->role->value ?? null,
                     'status' => 'error',
@@ -239,31 +223,31 @@ class AffiliateController extends Controller
                 );
             }
 
-            $affiliate->updated_by = auth()->user()->id;
-            $affiliate->updated_at = Carbon::now()->format('Y-m-d H:i:s.u');
+            $schedule->updated_by = auth()->user()->id;
+            $schedule->updated_at = Carbon::now()->format('Y-m-d H:i:s.u');
 
-            ActivityLogClass::create('Update Affiliate', $affiliate);
+            ActivityLogClass::create('Update Schedule', $schedule);
 
-            $affiliate->save();
+            $schedule->save();
 
             return new ApiSuccessResponse(
-                $affiliate,
+                $schedule,
                 [
-                    'message' => 'Affiliate updated succesfully!',
+                    'message' => 'Schedule updated succesfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Update Affiliate Failed', null, [
+            ActivityLogClass::create('Update Schedule Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to update a user!',
+                'An error occured when trying to update a schedule!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );
@@ -273,39 +257,39 @@ class AffiliateController extends Controller
     public function delete(DeleteRequest $request, $id)
     {
         try {
-            $affiiliate = Affiliate::find($id);
+            $schedule = Schedule::find($id);
 
-            if (!$affiiliate) {
+            if (!$schedule) {
                 return new ApiErrorResponse(
-                    'Affiliate does not exist!',
+                    'Schedule does not exist!',
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
 
-            Gate::authorize('delete', $affiiliate);
+            Gate::authorize('delete', $schedule);
 
-            ActivityLogClass::create('Delete Affiliate', $affiiliate);
+            ActivityLogClass::create('Delete Schedule', $schedule);
 
-            $affiiliate->delete();
+            $schedule->delete();
 
             return new ApiSuccessResponse(
                 null,
                 [
-                    'message' => 'Affiliate deleted successfully!',
+                    'message' => 'Schedule deleted successfully!',
                 ],
                 Response::HTTP_OK,
             );
         } catch (\Throwable $exception) {
             \Log::error($exception);
 
-            ActivityLogClass::create('Delete Affiliate Failed', null, [
+            ActivityLogClass::create('Delete Schedule Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
                 'role' => auth()->user()->role->value ?? null,
                 'status' => 'error',
             ]);
 
             return new ApiErrorResponse(
-                'An error occured when trying to delete an affiliate!',
+                'An error occured when trying to delete an schedule!',
                 Response::HTTP_INTERNAL_SERVER_ERROR,
                 $exception
             );

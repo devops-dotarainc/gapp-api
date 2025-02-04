@@ -4,6 +4,7 @@ use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BindingController;
 use App\Http\Controllers\HallOfFameController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StagController;
@@ -88,6 +89,14 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::get('/{id}', [SettingController::class, 'show']);
         Route::post('/update/{id}', [SettingController::class, 'update']);
         Route::any('/delete/{id}', [SettingController::class, 'delete']);
+    });
+
+    Route::post('schedules', [ScheduleController::class, 'index']);
+    Route::prefix('schedule')->group(function () {
+        Route::post('/', [ScheduleController::class, 'store']);
+        Route::get('/{id}', [ScheduleController::class, 'show']);
+        Route::post('/update/{id}', [ScheduleController::class, 'update']);
+        Route::any('/delete/{id}', [ScheduleController::class, 'delete']);
     });
 });
 

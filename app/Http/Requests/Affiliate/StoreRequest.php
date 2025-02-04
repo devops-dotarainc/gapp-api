@@ -31,6 +31,7 @@ class StoreRequest extends FormRequest
             'name' => ['string', 'required'],
             'contact_number' => ['string', 'min:11', 'max:11'],
             'island_group' => ['integer', 'in:1,2,3'],
+            'position' => ['integer'],
         ];
     }
 }

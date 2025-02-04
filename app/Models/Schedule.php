@@ -4,19 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Affiliate extends Model
+class Schedule extends Model
 {
-    protected $table = 'affiliates';
+    protected $table = 'schedules';
 
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
     protected $fillable = [
-        'name',
+        'title',
+        'description',
         'image',
-        'contact_number',
-        'location',
-        'island_group',
-        'position',
+        'background_color',
+        'event_date',
         'created_by',
         'updated_by',
         'deleted_by',

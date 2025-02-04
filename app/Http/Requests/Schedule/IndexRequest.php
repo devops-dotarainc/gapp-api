@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Affiliate;
+namespace App\Http\Requests\Schedule;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,10 +22,9 @@ class IndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => ['string', 'min:4', 'max:4'],
-            'contact_number' => ['string', 'min:11', 'max:11'],
-            'position' => ['integer'],
-            'island_group' => ['integer', 'in:1,2,3'],
+            'title' => ['string'],
+            'background_color' => ['string'],
+            'description' => ['string'],
             'page' => ['integer', 'min:1'],
             'limit' => ['integer', 'min:1', 'max:100'],
             'sort' => ['string'],

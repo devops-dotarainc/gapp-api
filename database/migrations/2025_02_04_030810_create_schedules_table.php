@@ -10,14 +10,13 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('affiliates', function (Blueprint $table) {
+        Schema::create('schedules', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('location')->nullable();
-            $table->string('contact_number')->nullable();
+            $table->string('title')->nullable();
+            $table->string('description')->nullable();
+            $table->string('background_color')->nullable();
             $table->string('image')->nullable();
-            $table->integer('island_group')->nullable();
-            $table->integer('position')->nullable();
+            $table->timestamp('event_date')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
@@ -31,6 +30,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('affiliates');
+        Schema::dropIfExists('schedules');
     }
 };

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Affiliate;
+namespace App\Http\Requests\Schedule;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateRequest extends FormRequest
+class DeleteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,12 +26,7 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:10240'],
-            'location' => ['string'],
-            'name' => ['string', 'required'],
-            'contact_number' => ['string', 'min:11', 'max:11'],
-            'island_group' => ['integer', 'in:1,2,3'],
-            'position' => ['integer'],
+            //
         ];
     }
 }
