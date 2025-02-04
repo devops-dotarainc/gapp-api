@@ -29,7 +29,7 @@ class UpdateRequest extends FormRequest
             'title' => ['string'],
             'description' => ['string'],
             'event_date' => ['date_format:Y-m-d'],
-            'image' => ['string'],
+            'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:10240'],
             'background_color' => ['string'],
         ];
     }
