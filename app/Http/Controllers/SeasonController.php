@@ -18,7 +18,7 @@ class SeasonController extends Controller
 
         $seasons = Season::where('year', $validated['year'])->get();
 
-        $seasons->transform(function ($season) {
+        $seasons->transform(function ($season) use ($validated) {
             // if ($season->id == 1) {
             //     $earlybirdCount = Wingband::where('season', 1);
 
@@ -37,14 +37,15 @@ class SeasonController extends Controller
             //     $latebornCount = Wingband::where('created_by', auth()->user()->id)->where('season', 4)->count();
             //     $season->entry = $latebornCount;
             // }
-
-            $earlybirdCount = Wingband::where('season', $season->season);
+            
+            $wingbandCount = Wingband::where('season', $season->season)
+            ->whereYear('wingband_date', $validated['year']);
 
             if(auth()->user()->role == Role::ENCODER) {
-                $earlybirdCount->where('created_by', auth()->user()->id);
+                $wingbandCount->where('created_by', auth()->user()->id);
             }
 
-            $season->entry = $earlybirdCount->count();
+            $season->entry = $wingbandCount->count();
 
             return $season;
         });
