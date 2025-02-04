@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('key')->nullable();
             $table->string('name')->nullable();
-            $table->string('value')->nullable();
+            $table->text('value')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
