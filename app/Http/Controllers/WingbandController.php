@@ -62,6 +62,10 @@ class WingbandController extends Controller
                 $wingbands->where('created_by', auth()->user()->id);
             }
 
+            if(isset($request->encoder)) {
+                $wingbands->where('created_by', $request->encoder);
+            }
+
             if (isset($request->season)) {
                 $wingbands->where('season', $request->season);
             }

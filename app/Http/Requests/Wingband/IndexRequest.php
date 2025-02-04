@@ -34,6 +34,7 @@ class IndexRequest extends FormRequest
             'updated_by' => ['string', 'max:255'],
             'updated_by' => ['string', 'in:1,2'],
             'wingband_year' => ['digits:4', 'integer', 'min:1900', 'max:'.date('Y')+1],
+            'encoder' => ['string', 'max:255'],
         ];
     }
 }
