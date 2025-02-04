@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Schedule;
 use Carbon\Carbon;
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Classes\ActivityLogClass;
