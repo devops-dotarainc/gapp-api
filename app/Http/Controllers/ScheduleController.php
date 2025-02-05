@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Classes\ActivityLogClass;
@@ -16,6 +15,7 @@ use App\Http\Requests\Schedule\IndexRequest;
 use App\Http\Requests\Schedule\StoreRequest;
 use App\Http\Requests\Schedule\DeleteRequest;
 use App\Http\Requests\Schedule\UpdateRequest;
+use App\Models\Schedule;
 
 class ScheduleController extends Controller
 {
@@ -40,6 +40,18 @@ class ScheduleController extends Controller
 
             if (isset($request['background_color'])) {
                 $schedules = $schedules->where('background_color', $request['background_color']);
+            }
+
+            if (isset($request['month'])) {
+                $month = $request['month'];
+
+                // Extract the year and month from the request
+                $year = substr($month, 0, 4);
+                $monthNumber = substr($month, 5, 2);
+
+                // Use where clause to filter by the month (ignoring the day part)
+                $schedules = $schedules->whereMonth('event_date', '=', $monthNumber)
+                    ->whereYear('event_date', '=', $year);
             }
 
             if (isset($request['search'])) {

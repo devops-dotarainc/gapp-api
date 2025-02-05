@@ -22,6 +22,7 @@ class IndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'month' => ['date_format:Y-m'],
             'title' => ['string'],
             'background_color' => ['string'],
             'description' => ['string'],
