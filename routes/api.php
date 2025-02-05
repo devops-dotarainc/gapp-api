@@ -91,7 +91,6 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::any('/delete/{id}', [SettingController::class, 'delete']);
     });
 
-    Route::get('schedules', [ScheduleController::class, 'index']);
     Route::prefix('schedule')->group(function () {
         Route::post('/', [ScheduleController::class, 'store']);
         Route::get('/{id}', [ScheduleController::class, 'show']);
@@ -100,6 +99,7 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
     });
 });
 
+Route::get('schedules', [ScheduleController::class, 'index']);
 Route::get('bindings', [BindingController::class, 'index']);
 Route::get('hofs', [HallOfFameController::class, 'index']);
 Route::get('settings', [SettingController::class, 'index']);
