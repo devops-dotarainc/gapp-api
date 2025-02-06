@@ -21,19 +21,23 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        // return [
+        //     'stag_registry' => ['nullable', 'string', 'max:255'],
+        //     'breeder_name' => ['nullable', 'string', 'max:255'],
+        //     'farm_name' => ['nullable', 'string', 'max:255'],
+        //     'farm_address' => ['nullable', 'string', 'max:255'],
+        //     'province' => ['nullable', 'string', 'max:255'],
+        //     'wingband_number' => ['nullable', 'integer', 'min:1'],
+        //     'feather_color' => ['nullable', 'string', 'max:255'],
+        //     'leg_color' => ['nullable', 'string', 'max:255'],
+        //     'comb_shape' => ['nullable', 'string', 'max:255'],
+        //     'nose_markings' => ['nullable', 'string', 'max:255'],
+        //     'feet_markings' => ['nullable', 'string', 'max:255'],
+        //     'status' => ['nullable', 'integer', 'min:1', 'in:1,2'],
+        // ];
+
         return [
-            'stag_registry' => ['nullable', 'string', 'max:255'],
-            'breeder_name' => ['nullable', 'string', 'max:255'],
-            'farm_name' => ['nullable', 'string', 'max:255'],
-            'farm_address' => ['nullable', 'string', 'max:255'],
-            'province' => ['nullable', 'string', 'max:255'],
-            'wingband_number' => ['nullable', 'integer', 'min:1'],
-            'feather_color' => ['nullable', 'string', 'max:255'],
-            'leg_color' => ['nullable', 'string', 'max:255'],
-            'comb_shape' => ['nullable', 'string', 'max:255'],
-            'nose_markings' => ['nullable', 'string', 'max:255'],
-            'feet_markings' => ['nullable', 'string', 'max:255'],
-            'status' => ['nullable', 'integer', 'min:1', 'in:1,2'],
+            'wingband_data' => ['required', 'array'],
         ];
     }
 }

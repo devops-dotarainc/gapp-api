@@ -463,71 +463,76 @@ class WingbandController extends Controller
         }
     }
 
-    public function update(UpdateRequest $request, $id)
+    public function update(UpdateRequest $requests)
     {
         try {
 
-            $id = Cryptor::decrypt($id);
+            foreach ($requests->wingband_data as $request) {
 
-            if (! $id) {
-                ActivityLogClass::create('Update Wingband Failed', null, [
-                    'user_id' => auth()->user()->id ?? null,
-                    'role' => auth()->user()->role->value ?? null,
-                    'status' => 'error',
-                ]);
+                $wingbandId = Cryptor::decrypt($request->_id);
 
-                return new ApiErrorResponse(
-                    'Invalid Wingband ID.',
-                    Response::HTTP_NOT_FOUND
+                if (! $wingbandId) {
+                    ActivityLogClass::create('Update Wingband Failed', null, [
+                        'user_id' => auth()->user()->id ?? null,
+                        'role' => auth()->user()->role->value ?? null,
+                        'status' => 'error',
+                    ]);
+    
+                    return new ApiErrorResponse(
+                        'Invalid Wingband ID.',
+                        Response::HTTP_NOT_FOUND
+                    );
+                }
+
+                $wingband = Wingband::withTrashed()->find($wingbandId);
+
+                if (! isset($wingband)) {
+                    ActivityLogClass::create('Update Wingband Failed', null, [
+                        'user_id' => auth()->user()->id ?? null,
+                        'role' => auth()->user()->role->value ?? null,
+                        'status' => 'error',
+                    ]);
+    
+                    return new ApiErrorResponse(
+                        'Wingband Not Found.',
+                        Response::HTTP_NOT_FOUND
+                    );
+                }
+
+                Gate::authorize('update', $wingband);
+
+                $data = $request->only(
+                    'stag_registry',
+                    'breeder_name',
+                    'farm_name',
+                    'farm_address',
+                    'province',
+                    'wingband_number',
+                    'feather_color',
+                    'leg_color',
+                    'comb_shape',
+                    'nose_markings',
+                    'feet_markings',
+                    'season',
+                    'wingband_date',
+                    'chapter',
                 );
+    
+                $wingband->fill($data);
+    
+                if ($wingband->isClean()) {
+                    return new ApiErrorResponse(
+                        'No changes made.',
+                        Response::HTTP_UNPROCESSABLE_ENTITY
+                    );
+                }
+    
+                $wingband->updated_by = auth()->user()->id;
+    
+                ActivityLogClass::create('Update Wingband', $wingband);
+    
+                $wingband->save();
             }
-
-            $wingband = Wingband::withTrashed()->find($id);
-
-            if (! isset($wingband)) {
-                ActivityLogClass::create('Update Wingband Failed', null, [
-                    'user_id' => auth()->user()->id ?? null,
-                    'role' => auth()->user()->role->value ?? null,
-                    'status' => 'error',
-                ]);
-
-                return new ApiErrorResponse(
-                    'Wingband Not Found.',
-                    Response::HTTP_NOT_FOUND
-                );
-            }
-
-            Gate::authorize('update', $wingband);
-
-            $data = $request->only(
-                'stag_registry',
-                'breeder_name',
-                'farm_name',
-                'farm_address',
-                'province',
-                'wingband_number',
-                'feather_color',
-                'leg_color',
-                'comb_shape',
-                'nose_markings',
-                'feet_markings',
-                'status'
-            );
-
-            $wingband->fill($data);
-
-            if ($wingband->isClean()) {
-                return new ApiErrorResponse(
-                    'No changes made.',
-                    Response::HTTP_UNPROCESSABLE_ENTITY
-                );
-            }
-
-            $wingband->updated_by = auth()->user()->id;
-
-            ActivityLogClass::create('Update Wingband', $wingband);
-
-            $wingband->save();
 
             return new ApiSuccessResponse(
                 null,

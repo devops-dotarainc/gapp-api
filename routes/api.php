@@ -22,7 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware([CorsMiddleware::class])
             ->post('/import-wingband', [WingbandController::class, 'importWingband']);
         Route::post('/store-wingband', [WingbandController::class, 'storeWingband']);
-        Route::post('/update/{id}', [WingbandController::class, 'update']);
+        Route::post('/update', [WingbandController::class, 'update']);
         Route::delete('/delete/{id}', [WingbandController::class, 'delete']);
     });
 
