@@ -248,6 +248,7 @@ class WingbandController extends Controller
                     'season' => $seasons,
                     'wingband_date' => $date,
                     'chapter' => $request['chapter'],
+                    'contact_number' => $request['contact_number'],
                     'created_by' => auth()->user()->id,
                 ]);
 
