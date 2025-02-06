@@ -45,7 +45,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token', [$user->role->label()])->plainTextToken;
 
-        ActivityLogClass::create('Login', $user);
+        ActivityLogClass::create('Login', null, [
+            'user_id' => $user->id ?? null,
+            'role' => $user->role->value ?? null,
+        ]);
 
         return new ApiSuccessResponse(
             [

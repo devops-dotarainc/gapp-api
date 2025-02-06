@@ -82,11 +82,10 @@ class ActivityLogController extends Controller
             $data = $activityLogs->orderBy($sort, $order)->paginate($limit);
 
             $data->getCollection()->transform(function ($activity) {
-                $activity->_id = Cryptor::encrypt($activity->id);
                 $activity->table_id = Cryptor::encrypt($activity->id);
                 $activity->role ? $activity->role = Role::fromValue($activity->role) : null;
-
-                $activity->user ? $activity->user = $activity->user->username : null;
+                $activity->user ? $activity->username = $activity->user->username : null;
+                $activity->_id = Cryptor::encrypt($activity->id);
 
                 unset($activity->id, $activity->user_id, $activity->user);
 
