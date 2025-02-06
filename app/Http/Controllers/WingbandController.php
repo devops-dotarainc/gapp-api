@@ -50,6 +50,8 @@ class WingbandController extends Controller
                     'feather_color',
                     'leg_color',
                     'comb_shape',
+                    'chapter',
+                    'contact_number',
                     'nose_markings',
                     'feet_markings',
                     'wingband_date',
