@@ -23,6 +23,7 @@ class SeasonRequest extends FormRequest
     {
         return [
             'year' => 'digits:4',
+            'encoder' => 'string',
             // 'season' => '|integer|in:1,2,3,4'
         ];
     }
