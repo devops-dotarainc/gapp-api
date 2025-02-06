@@ -35,4 +35,14 @@ enum Role: int
 
         return null;
     }
+
+    public static function fromValue(int $value): ?string
+    {
+        foreach (self::cases() as $case) {
+            if ($case->value === $value) {
+                return $case->label();
+            }
+        }
+        return null;
+    }
 }

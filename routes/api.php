@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BindingController;
@@ -97,6 +98,8 @@ Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
         Route::post('/update/{id}', [ScheduleController::class, 'update']);
         Route::any('/delete/{id}', [ScheduleController::class, 'delete']);
     });
+
+    Route::get('/activity-logs', [ActivityLogController::class, 'index']);
 });
 
 Route::get('schedules', [ScheduleController::class, 'index']);

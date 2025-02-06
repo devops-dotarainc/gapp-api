@@ -25,4 +25,14 @@ class ActivityLog extends Model
         'ip',
         'request',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function details()
+    {
+        return $this->morphTo(null, 'table_name', 'table_id');
+    }
 }
