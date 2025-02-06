@@ -471,8 +471,9 @@ class WingbandController extends Controller
         try {
 
             foreach ($requests->wingband_data as $request) {
+                $request = $request; 
 
-                $wingbandId = Cryptor::decrypt($request->_id);
+                $wingbandId = Cryptor::decrypt($request['_id']);
 
                 if (! $wingbandId) {
                     ActivityLogClass::create('Update Wingband Failed', null, [
@@ -504,7 +505,7 @@ class WingbandController extends Controller
 
                 Gate::authorize('update', $wingband);
 
-                $data = $request->only(
+                $allowedKeys = [                    
                     'stag_registry',
                     'breeder_name',
                     'farm_name',
@@ -519,22 +520,22 @@ class WingbandController extends Controller
                     'season',
                     'wingband_date',
                     'chapter',
-                );
+                    'contact_number',
+                ];
+
+                $data = $request;
+
+                $data = array_intersect_key($request, array_flip($allowedKeys));
     
                 $wingband->fill($data);
+
+                if ($wingband->isDirty()) {
+                    $wingband->updated_by = auth()->user()->id;
     
-                if ($wingband->isClean()) {
-                    return new ApiErrorResponse(
-                        'No changes made.',
-                        Response::HTTP_UNPROCESSABLE_ENTITY
-                    );
-                }
-    
-                $wingband->updated_by = auth()->user()->id;
-    
-                ActivityLogClass::create('Update Wingband', $wingband);
-    
-                $wingband->save();
+                    ActivityLogClass::create('Update Wingband', $wingband);
+        
+                    $wingband->save();
+                }                
             }
 
             return new ApiSuccessResponse(
