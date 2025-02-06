@@ -22,7 +22,7 @@ class SeasonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => 'required|digits:4',
+            'year' => 'digits:4',
             // 'season' => '|integer|in:1,2,3,4'
         ];
     }
