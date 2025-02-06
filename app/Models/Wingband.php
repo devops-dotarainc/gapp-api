@@ -30,6 +30,7 @@ class Wingband extends Model
         'status',
         'wingband_date',
         'chapter',
+        'contact_number',
         'created_by',
         'updated_by',
         'deleted_by',
