@@ -109,6 +109,19 @@ class AffiliateController extends Controller
                 $data['image'] = $imageName;
             }
 
+            $islandGroup = $request['island_group'];
+
+            $existingAffiliates = Affiliate::where('island_group', $islandGroup)->get();
+
+            $newAffiliatePosition = $request->get('position', 1);
+            $data['position'] = $newAffiliatePosition;
+
+            if ($existingAffiliates->isNotEmpty() && $newAffiliatePosition <= $existingAffiliates->max('position')) {
+                Affiliate::where('island_group', $islandGroup)
+                    ->where('position', '>=', $newAffiliatePosition)
+                    ->increment('position');
+            }
+
             $affiliate = Affiliate::create($data);
 
             ActivityLogClass::create('Create Affiliate', $affiliate);
@@ -181,6 +194,8 @@ class AffiliateController extends Controller
         try {
             $affiliate = Affiliate::find($id);
 
+            $currentPosition = $affiliate->position;
+
             if (!$affiliate) {
                 ActivityLogClass::create('Update Affiliate Failed', null, [
                     'user_id' => auth()->user()->id ?? null,
@@ -213,6 +228,20 @@ class AffiliateController extends Controller
             }
 
             if (isset($request['position'])) {
+                $currentPosition = intval($affiliate->position);
+                $newPosition = intval($request['position']);
+
+                if ($newPosition !== $currentPosition) {
+                    if ($newPosition > $currentPosition) {
+                        Affiliate::where('position', '>=', $newPosition)
+                            ->increment('position');
+                    } elseif ($newPosition < $currentPosition) {
+                        Affiliate::where('position', '>=', $newPosition)
+                            ->where('position', '<', $currentPosition)
+                            ->increment('position');
+                    }
+                }
+
                 $affiliate->position = $request['position'];
             }
 
