@@ -63,8 +63,8 @@ class AffiliateController extends Controller
             $affiiliates = $affiiliates->orderBy($sort, $order)
                 ->paginate($limit);
 
-            $affiiliates->getCollection()->transform(function ($affiiliate) {
-                return $affiiliate;
+            $affiiliates->getCollection()->transform(function ($affiliate) {
+                return $affiliate;
             });
 
             return new ApiSuccessResponse(
@@ -234,10 +234,12 @@ class AffiliateController extends Controller
                 if ($newPosition !== $currentPosition) {
                     if ($newPosition > $currentPosition) {
                         Affiliate::where('position', '>=', $newPosition)
+                            ->where('island_group', $affiliate->island_group)
                             ->increment('position');
                     } elseif ($newPosition < $currentPosition) {
                         Affiliate::where('position', '>=', $newPosition)
                             ->where('position', '<', $currentPosition)
+                            ->where('island_group', $affiliate->island_group)
                             ->increment('position');
                     }
                 }
@@ -302,20 +304,31 @@ class AffiliateController extends Controller
     public function delete(DeleteRequest $request, $id)
     {
         try {
-            $affiiliate = Affiliate::find($id);
+            $affiliate = Affiliate::find($id);
 
-            if (!$affiiliate) {
+            if (!$affiliate) {
                 return new ApiErrorResponse(
                     'Affiliate does not exist!',
                     Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
 
-            Gate::authorize('delete', $affiiliate);
+            Gate::authorize('delete', $affiliate);
 
-            ActivityLogClass::create('Delete Affiliate', $affiiliate);
+            ActivityLogClass::create('Delete Affiliate', $affiliate);
 
-            $affiiliate->delete();
+            $islandGroup = $affiliate->island_group;
+            $deletedPos = $affiliate->position;
+
+            $affiliate->delete();
+
+            Affiliate::where('island_group', $islandGroup)
+                ->where('position', '>', $deletedPos)
+                ->orderBy('position')
+                ->get()
+                ->each(function ($aff) {
+                    $aff->decrement('position');
+                });
 
             return new ApiSuccessResponse(
                 null,
