@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Http\Requests\Wingband\StoreWingbandRequest;
 use App\Http\Requests\Wingband\ImportWingbandRequest;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use function Illuminate\Support\defer;
 
 class WingbandController extends Controller
 {
@@ -471,7 +472,7 @@ class WingbandController extends Controller
         try {
 
             foreach ($requests->wingband_data as $request) {
-                $request = $request; 
+                DB::beginTransaction();
 
                 $wingbandId = Cryptor::decrypt($request['_id']);
 
@@ -486,6 +487,29 @@ class WingbandController extends Controller
                         'Invalid Wingband ID.',
                         Response::HTTP_NOT_FOUND
                     );
+                }
+
+                $checkWingband = Wingband::where('id', '!=', $wingbandId)
+                    ->where('wingband_number', $request['wingband_number'])
+                    ->where('season', Season::fromLabel($request['season_name'])->value)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if (! is_null($checkWingband)) {
+                    $wingbandDate = Carbon::parse($checkWingband->wingband_date);
+
+                    ActivityLogClass::create('Create Wingband Failed', null, [
+                        'user_id' => auth()->user()->id ?? null,
+                        'role' => auth()->user()->role->value ?? null,
+                        'status' => 'error',
+                    ]);
+
+                    if ($wingbandDate->year == Carbon::parse($request['wingband_date'])->year) {
+                        return new ApiErrorResponse(
+                            'Duplicate wingband number '.$checkWingband->wingband_number,
+                            Response::HTTP_BAD_REQUEST
+                        );
+                    }
                 }
 
                 $wingband = Wingband::withTrashed()->find($wingbandId);
@@ -526,16 +550,25 @@ class WingbandController extends Controller
                 $data = $request;
 
                 $data = array_intersect_key($request, array_flip($allowedKeys));
+
+                $oldData = clone $wingband;
     
                 $wingband->fill($data);
 
                 if ($wingband->isDirty()) {
                     $wingband->updated_by = auth()->user()->id;
+
+                    if($wingband->isDirty(['stag_registry', 'farm_name', 'farm_address', 'breeder_name', 'chapter', 'wingband_date'])) {
+                        defer(fn () => $this->modify($oldData, 'dec'), 'updateWingbandDec.' . $oldData->id);
+                        defer(fn () => $this->modify($wingband, 'inc'), 'updateWingbandInc.' . $wingband->id);
+                    }
     
                     ActivityLogClass::create('Update Wingband', $wingband);
         
                     $wingband->save();
-                }                
+
+                    DB::commit();
+                }
             }
 
             return new ApiSuccessResponse(
@@ -546,6 +579,8 @@ class WingbandController extends Controller
 
         } catch (\Exception $e) {
             Log::error($e);
+
+            DB::rollBack();
 
             ActivityLogClass::create('Update Wingband Failed', null, [
                 'user_id' => auth()->user()->id ?? null,
@@ -600,6 +635,8 @@ class WingbandController extends Controller
 
             ActivityLogClass::create('Delete Wingband', $wingband);
 
+            defer(fn () => $this->modify($wingband, 'dec'), 'deleteWingband.' . $id);
+
             $wingband->delete();
 
             return new ApiSuccessResponse(
@@ -621,6 +658,92 @@ class WingbandController extends Controller
                 'An error occured while updating wingband data.',
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
+        }
+    }
+
+    public function modify($data, $operation)
+    {
+        $date = Carbon::parse($data->wingband_date);
+
+        $checkStag = Stag::where('stag_registry', $data->stag_registry)
+            ->where('farm_name', ucwords($data->farm_name))
+            ->where('farm_address', ucwords($data->farm_address))
+            ->where('breeder_name', ucwords($data->breeder_name))
+            ->first();
+            
+        if (! $checkStag) {
+            $stag = new Stag;
+            $stag->stag_registry = $data->stag_registry;
+            $stag->farm_name = ucwords($data->farm_name);
+            $stag->farm_address = ucwords($data->farm_address);
+            $stag->breeder_name = ucwords($data->breeder_name);
+            $stag->chapter = ucfirst($data->chapter);
+            $stag->banded_cockerels = 1;
+            $stag->save();
+        } else {
+            $operation == 'inc' ? $checkStag->banded_cockerels += 1 : $checkStag->banded_cockerels -= 1;
+            $checkStag->save();
+        }
+
+        $checkBreeder = Breeder::where('name', ucwords($data->breeder_name))
+            ->where('farm_name', ucwords($data->farm_name))
+            ->where('farm_address', ucwords($data->farm_address))
+            ->where('chapter', ucfirst($data->chapter))
+            ->first();
+
+        if (! $checkBreeder) {
+            $breeder = new Breeder;
+            $breeder->name = ucwords($data->breeder_name);
+            $breeder->farm_name = ucwords($data->farm_name);
+            $breeder->farm_address = ucwords($data->farm_address);
+            $breeder->chapter = ucfirst($data->chapter);
+            $breeder->banded_cockerels = 1;
+            $breeder->save();
+        } else {
+            $operation == 'inc' ? $checkBreeder->banded_cockerels += 1 : $checkBreeder->banded_cockerels -= 1;
+            $checkBreeder->save();
+        }
+
+        $checkFarm = Farm::where('name', ucwords($data->farm_name))
+            ->where('address', ucwords($data->farm_address))
+            ->where('breeder_name', ucwords($data->breeder_name))
+            ->first();
+
+        if (! $checkFarm) {
+            $farm = new Farm;
+            $farm->name = ucwords($data->farm_name);
+            $farm->address = ucwords($data->farm_address);
+            $farm->breeder_name = ucwords($data->breeder_name);
+            $farm->banded_cockerels = 1;
+            $farm->save();
+        } else {
+            $operation == 'inc' ? $checkFarm->banded_cockerels += 1 : $checkFarm->banded_cockerels -= 1;
+            $checkFarm->save();
+        }
+
+        $checkChapter = Chapter::where('chapter', ucfirst($data->chapter))->first();
+
+        if (! $checkChapter) {
+            $chapter = new Chapter;
+            $chapter->chapter = ucfirst($data->chapter);
+            $chapter->banded_cockerels = 1;
+            $chapter->save();
+        } else {
+            $operation == 'inc' ? $checkChapter->banded_cockerels += 1 : $checkChapter->banded_cockerels -= 1;
+            $checkChapter->save();
+        }
+
+        $season = ModelsSeason::where('season', $data->season)->where('year', $date->year)->first();
+
+        if (! $season) {
+            $season = new ModelsSeason;
+            $season->season = $data->season;
+            $season->entry += 1;
+            $season->year = $date->year;
+            $season->save();
+        } else {
+            $operation == 'inc' ? $season->entry += 1 : $season->entry -= 1;
+            $season->save();
         }
     }
 }
