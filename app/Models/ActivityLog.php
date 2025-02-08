@@ -20,6 +20,7 @@ class ActivityLog extends Model
         'description',
         'table_name',
         'table_id',
+        'table_data',
         'old_value',
         'new_value',
         'ip',

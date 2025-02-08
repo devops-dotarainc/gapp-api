@@ -25,7 +25,11 @@ class ActivityLogClass
         $oldValues = [];
         $newValues = [];
 
-        if ($model) {
+        if ($model) {            
+            $model->_id = Cryptor::encrypt($model->id);
+            unset($model->id);
+            $data['table_data'] = $model;
+
             foreach ($model->getDirty() as $key => $value) {
                 if ($key == 'updated_at') {
                     $model->getDirty($key);
