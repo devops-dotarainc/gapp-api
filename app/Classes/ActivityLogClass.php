@@ -2,6 +2,7 @@
 
 namespace App\Classes;
 
+use App\Enums\Role;
 use App\Helpers\Cryptor;
 use App\Models\ActivityLog;
 use App\Helpers\GetIpHelper;
@@ -48,6 +49,10 @@ class ActivityLogClass
         foreach ($request as $key => $value) {
             if (strpos($key, 'password') !== false) {
                 $request[$key] = '********';
+            }
+            
+            if (strpos($key, 'role') !== false) {
+                $request[$key] = Role::fromValue($value);
             }
         }
 
