@@ -26,10 +26,13 @@ class ActivityLogClass
         $oldValues = [];
         $newValues = [];
 
-        if ($model) {            
-            $model->_id = Cryptor::encrypt($model->id);
-            unset($model->id);
-            $data['table_data'] = $model;
+        if ($model) {
+            $modelClone = clone $model;       
+            $modelClone->_id = Cryptor::encrypt($model->id);
+
+            unset($modelClone->id);
+            
+            $data['table_data'] = $modelClone;
 
             foreach ($model->getDirty() as $key => $value) {
                 if ($key == 'updated_at') {
